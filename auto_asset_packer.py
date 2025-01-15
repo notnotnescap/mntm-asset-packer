@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-An automatic asset packer for the momentum Flipper Zero. This is a modification of the original asset_packer script by @Willy-JL
+An improved asset packer for the momentum Flipper Zero. This is a modification of the original asset_packer script by @Willy-JL
 """
 
 import pathlib
