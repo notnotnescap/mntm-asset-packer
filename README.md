@@ -30,4 +30,6 @@ Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name' (does not 
 - [ ] automatic file renaming
 - [ ] automatic file conversion
 - [ ] verbose error messages
+- [ ] convert .bm or .bmx files back to .png
 - [ ] hopefully replace the current asset packer script
+- [ ] GUI?
