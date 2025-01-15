@@ -12,16 +12,16 @@
 
 # Usage
 
-`python3 auto_asset_packer.py help`
+```python3 auto_asset_packer.py help```<br>
 Displays help message
 
-`python3 auto_asset_packer.py create <Asset Pack Name>`
+```python3 auto_asset_packer.py create <Asset Pack Name>```<br>
 Creates a directory with the correct file structure that can be used to prepare for the packing process. (does not work yet)
 
-`python3 auto_asset_packer.py pack all`
+```python3 auto_asset_packer.py pack all```<br>
 Packs all asset packs in the current directory into './asset_packs/'
 
-`python3 auto_asset_packer.py pack <./Asset\ Pack\ Name>`
+```python3 auto_asset_packer.py pack <./Asset\ Pack\ Name>```<br>
 Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name' (does not work yet)
 
 # Roadmap
