@@ -1,5 +1,7 @@
 # Auto Asset Packer For Flipper Zero
- An attempt to automate the asset packer script even further
+ An attempt to improve the asset packer script to make it more accessible and easier to use.
+
+# This is a work in progress and nothing really works yet.
 
 # Setup
 
@@ -10,4 +12,15 @@
 
 # Usage
 
-1. Run `python auto_asset_packer.py setup "Asset Pack Name"` to create the structure for the asset pack
+`python3 auto_asset_packer.py help`
+Displays help message
+
+`python3 auto_asset_packer.py create <Asset Pack Name>`
+Creates a directory with the correct file structure that can be used to prepare for the packing process. (does not work yet)
+
+`python3 auto_asset_packer.py pack <./Asset\ Pack\ Name>`
+Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name' (does not work yet)
+
+`python3 auto_asset_packer.py\033[0;33m pack all\033[0m`
+Packs all asset packs in the current directory into './asset_packs/'
+
