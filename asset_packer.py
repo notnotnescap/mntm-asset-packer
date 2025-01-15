@@ -253,29 +253,27 @@ def pack_everything_here(source_directory: "str | pathlib.Path", output_director
 
 def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
     """Pack a specific asset pack"""
-    asset_pack_path = pathlib.Path(asset_pack_path)
-    output_directory = pathlib.Path(output_directory)
-    logger(f"Input: {asset_pack_path}") # debug
-    logger(f"Output: {output_directory}") # debug
-
-    # TODO: Implement this shit
+    # asset_pack_path = pathlib.Path(asset_pack_path)
+    # output_directory = pathlib.Path(output_directory)
+    # logger(f"Input: {asset_pack_path}") # debug
+    # logger(f"Output: {output_directory}") # debug
+    pass
 
 
 if __name__ == "__main__":
     # for i, arg in enumerate(sys.argv): # debug
     #     print(f"arg {i}: {arg}")
-    try:
+    if len(sys.argv) > 1:
         match sys.argv[1]:
             case "help" | "-h" | "--help":
                 print(HELP_MESSAGE)
 
             case "create" | "setup":
-                print(f"Setting up structure for pack \"{sys.argv[2]}\"")
+                print("Not implemented yet...")
 
             case "pack" | None:
-                try:
-
-                    if sys.argv[2] == "all" or sys.argv[2] == None:
+                if len(sys.argv) > 2:
+                    if sys.argv[2] == "all":
 
                         here = pathlib.Path(__file__).absolute().parent
                         start = time.perf_counter()
@@ -284,15 +282,13 @@ if __name__ == "__main__":
                         print(f"\nFinished in {round(end - start, 2)}s\n")
 
                     else:
-                        pass #TODO: Implement this
-                except IndexError:
-                    print("Not a valid command. Use 'python3 asset_packer.py help' for more information.")
+                        print("implemented yet...")
+                else:
+                    print(HELP_MESSAGE)
 
             case _:
                 print(HELP_MESSAGE)
-
-    except IndexError:
-        
+    else:
         here = pathlib.Path(__file__).absolute().parent
         start = time.perf_counter()
         pack_everything_here(here, here / "asset_packs", logger=print)
