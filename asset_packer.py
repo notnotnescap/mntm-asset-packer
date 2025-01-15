@@ -15,6 +15,29 @@ import sys
 from PIL import Image, ImageOps
 import heatshrink2
 
+HELP_MESSAGE = """The Asset packer will convert files to be efficient and compatible with the asset pack system used in Momentum.
+
+Usage :
+    \033[32mpython3 asset_packer.py\033[0;33m help\033[0m
+        \033[3mDisplays this message
+        \033[0m
+    \033[32mpython3 asset_packer.py\033[0;33m create <Asset Pack Name>\033[0m
+        \033[3mCreates a directory with the correct file structure that can be used
+        to prepare for the packing process.
+        \033[0m
+    \033[32mpython3 asset_packer.py\033[0;33m pack <./Asset\\ Pack\\ Name>\033[0m
+        \033[3mpacks the specified asset pack into './asset_packs/Asset\\ Pack\\ Name'
+        \033[0m
+    \033[32mpython3 asset_packer.py\033[0;33m pack all\033[0m
+        \033[3mpacks all asset packs in the current directory into './asset_packs/'
+        \033[0m
+    \033[32mpython3 asset_packer.py\033[0m
+        \033[3mpacks all asset packs in the current directory into './asset_packs/'
+        (this is to keep compatibility with the original asset_packer.py)
+        \033[0m
+"""
+
+
 
 def convert_bm(img: "Image.Image | pathlib.Path") -> bytes:
     """Converts an image to a bitmap"""
@@ -134,6 +157,16 @@ def pack_font(src: pathlib.Path, dst: pathlib.Path):
 
 
 def pack_everything_here(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
+    try:
+        input(
+            "\033[32mThis will pack all asset packs in the current directory.\n"
+            "The resulting asset packs will be saved to './asset_packs'\n\033[0m"
+            "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
+        )
+    except KeyboardInterrupt:
+        sys.exit(0)
+    print()
+
     source_directory = pathlib.Path(source_directory)
     output_directory = pathlib.Path(output_directory)
     logger(f"Input: {source_directory}") # debug
@@ -231,49 +264,37 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
 if __name__ == "__main__":
     # for i, arg in enumerate(sys.argv): # debug
     #     print(f"arg {i}: {arg}")
-    match sys.argv[1]:
-        case "help" | "-h" | "--help":
-            print("""The Asset packer will convert files to be efficient and compatible with the asset pack system used in Momentum.
+    try:
+        match sys.argv[1]:
+            case "help" | "-h" | "--help":
+                print(HELP_MESSAGE)
 
-            Usage :
-                \033[2mpython3 auto_asset_packer.py\033[0;33m help\033[0m
-                    \033[3mDisplays this message
-                    \033[0m
-                \033[2mpython3 auto_asset_packer.py\033[0;33m create <Asset Pack Name>\033[0m
-                    \033[3mCreates a directory with the correct file structure that can be used
-                    to prepare for the packing process.
-                    \033[0m
-                \033[2mpython3 auto_asset_packer.py\033[0;33m pack <./Asset\\ Pack\\ Name>\033[0m
-                    \033[3mpacks the specified asset pack into './asset_packs/Asset\\ Pack\\ Name'
-                    \033[0m
-                \033[2mpython3 auto_asset_packer.py\033[0;33m pack all\033[0m
-                    \033[3mpacks all asset packs in the current directory into './asset_packs/'
-                    \033[0m
-            """)
+            case "create" | "setup":
+                print(f"Setting up structure for pack \"{sys.argv[2]}\"")
 
-        case "create" | "setup":
-            print(f"Setting up structure for pack \"{sys.argv[2]}\"")
-
-        case "pack":
-            if sys.argv[2] == "all":
+            case "pack" | None:
                 try:
-                    input(
-                        "\033[32mThis will pack all asset packs in the current directory.\n"
-                        "The resulting asset packs will be saved to './asset_packs'\n\033[0m"
-                        "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
-                    )
-                except KeyboardInterrupt:
-                    sys.exit(0)
-                print()
-                here = pathlib.Path(__file__).absolute().parent
-                start = time.perf_counter()
 
-                pack_everything_here(here, here / "asset_packs", logger=print)
+                    if sys.argv[2] == "all" or sys.argv[2] == None:
 
-                end = time.perf_counter()
-                print(f"\nFinished in {round(end - start, 2)}s\n")
-            else:
-                pass #TODO: Implement this
+                        here = pathlib.Path(__file__).absolute().parent
+                        start = time.perf_counter()
+                        pack_everything_here(here, here / "asset_packs", logger=print)
+                        end = time.perf_counter()
+                        print(f"\nFinished in {round(end - start, 2)}s\n")
 
-        case _:
-            print("Not a valid command. Use 'python3 auto_asset_packer.py help' for more information.")
+                    else:
+                        pass #TODO: Implement this
+                except IndexError:
+                    print("Not a valid command. Use 'python3 asset_packer.py help' for more information.")
+
+            case _:
+                print(HELP_MESSAGE)
+
+    except IndexError:
+        
+        here = pathlib.Path(__file__).absolute().parent
+        start = time.perf_counter()
+        pack_everything_here(here, here / "asset_packs", logger=print)
+        end = time.perf_counter()
+        print(f"\nFinished in {round(end - start, 2)}s\n")
