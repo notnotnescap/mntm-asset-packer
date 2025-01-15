@@ -1,4 +1,4 @@
-# Improved Asset Packer For Flipper Zero
+# Improved Asset Packer For Momentum
  An attempt to improve the asset packer script to make it more accessible and easier to use.
 
 # ! This is a work in progress and nothing really works yet !
