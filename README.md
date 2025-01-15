@@ -1,7 +1,7 @@
 # Improved Asset Packer For Flipper Zero
  An attempt to improve the asset packer script to make it more accessible and easier to use.
 
-# This is a work in progress and nothing really works yet.
+# ! This is a work in progress and nothing really works yet !
 
 # Setup
 
