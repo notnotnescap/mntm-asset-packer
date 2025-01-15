@@ -32,7 +32,7 @@ Usage :
         \033[3mpacks all asset packs in the current directory into './asset_packs/'
         \033[0m
     \033[32mpython3 asset_packer.py\033[0m
-        \033[3mpacks all asset packs in the current directory into './asset_packs/'
+        \033[3msame as 'python3 asset_packer.py pack all'
         (this is to keep compatibility with the original asset_packer.py)
         \033[0m
 """

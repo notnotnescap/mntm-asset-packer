@@ -22,7 +22,7 @@ Creates a directory with the correct file structure that can be used to prepare 
 Packs all asset packs in the current directory into './asset_packs/'
 
 ```python3 asset_packer.py```<br>
-Packs all asset packs in the current directory into './asset_packs/' (this is to keep compatibility with the original asset_packer.py)
+same as *asset_packer.py pack all* (this is to keep compatibility with the original asset_packer.py)
 
 ```python3 asset_packer.py pack <./Asset\ Pack\ Name>```<br>
 Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name' (does not work yet)
