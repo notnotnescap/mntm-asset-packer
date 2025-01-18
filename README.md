@@ -29,10 +29,10 @@ Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name' (does not 
 
 # Roadmap
 - [x] pack specific asset pack command
-- [ ] create command
+- [x] create command
 - [ ] automatic file renaming
 - [ ] automatic file conversion
 - [ ] verbose error messages
-- [ ] convert .bm or .bmx files back to .png
+- [ ] convert .bm or .bmx files back to .png -> recover command
 - [ ] hopefully replace the current asset packer script
 - [ ] GUI?

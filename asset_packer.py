@@ -37,6 +37,32 @@ Usage :
         \033[0m
 """
 
+EXAMPLE_MANIFEST = """Filetype: Flipper Animation Manifest
+Version: 1
+
+Name: example_anim
+Min butthurt: 0
+Max butthurt: 18
+Min level: 1
+Max level: 30
+Weight: 8
+"""
+
+EXAMPLE_META = """Filetype: Flipper Animation
+Version: 1
+
+Width: 128
+Height: 64
+Passive frames: 24
+Active frames: 0
+Frames order: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+Active cycles: 0
+Frame rate: 1
+Duration: 3600
+Active cooldown: 0
+
+Bubble slots: 0
+"""
 
 
 def convert_bm(img: "Image.Image | pathlib.Path") -> bytes:
@@ -156,6 +182,11 @@ def pack_font(src: pathlib.Path, dst: pathlib.Path):
             shutil.copyfile(src, dst)
 
 
+def format_frames(directory: pathlib.Path):
+    """converts all frames to png renames them "frame_N.png" (requires the image name to contain the frame number)"""
+    pass
+
+
 def pack_everything(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
     """Pack all asset packs in the source directory"""
     try:
@@ -255,6 +286,7 @@ def pack_everything(source_directory: "str | pathlib.Path", output_directory: "s
         logger(f"Finished packing '{source.name}'")
         logger(f"Saved to: {packed}")
 
+
 def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
     """Pack a specific asset pack"""
     asset_pack_path = pathlib.Path(asset_pack_path)
@@ -282,7 +314,6 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
 
     # packing anims
     if (asset_pack_path / "Anims/manifest.txt").exists():
-        logger(f"manifest.txt exists in {asset_pack_path / 'Anims'}")
         (packed / "Anims").mkdir(parents=True, exist_ok=True) # ensure that the "Anims" directory exists
         copy_file_as_lf(asset_pack_path / "Anims/manifest.txt", packed / "Anims/manifest.txt")
         manifest = (asset_pack_path / "Anims/manifest.txt").read_bytes()
@@ -340,6 +371,35 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
     logger(f"Saved to: {packed}")
 
 
+def create_asset_pack(name: str, output_directory: "str | pathlib.Path", logger: typing.Callable):
+    """Creates the file structure for an asset pack"""
+
+    # check for illegal characters
+    if not re.match(r"^[a-zA-Z0-9_\- ]+$", name):
+        logger(f"Error: '{name}' contains illegal characters")
+        return
+
+    if (output_directory / name).exists():
+        logger(f"Error: {output_directory / name} already exists")
+        return
+
+    # creating a directory with the name of the asset pack
+    (output_directory / name).mkdir(parents=True, exist_ok=True)
+    # creating subdirectories for the asset pack
+    (output_directory / name / "Anims").mkdir(parents=True, exist_ok=True)
+    (output_directory / name / "Icons").mkdir(parents=True, exist_ok=True)
+    (output_directory / name / "Fonts").mkdir(parents=True, exist_ok=True)
+    # creating "manifest.txt" file
+    (output_directory / name / "Anims" / "manifest.txt")
+    with open(output_directory / name / "Anims" / "manifest.txt", "w") as f:
+        f.write(EXAMPLE_MANIFEST)
+    # creating an example anim
+    (output_directory / name / "Anims" / "example_anim").mkdir(parents=True, exist_ok=True)
+    with open(output_directory / name / "Anims" / "example_anim" / "meta.txt", "w") as f:
+        f.write(EXAMPLE_META)
+
+    logger(f"Created asset pack '{name}' in '{output_directory}'")
+
 if __name__ == "__main__":
     # for i, arg in enumerate(sys.argv): # debug
     #     print(f"arg {i}: {arg}")
@@ -349,7 +409,12 @@ if __name__ == "__main__":
                 print(HELP_MESSAGE)
 
             case "create":
-                print("Not implemented yet...")
+                if len(sys.argv) > 2:
+                    name = " ".join(sys.argv[2:])
+                    create_asset_pack(name, pathlib.Path.cwd(), logger=print)
+
+                else:
+                    print(HELP_MESSAGE)
 
             case "pack":
                 if len(sys.argv) > 2:
