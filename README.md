@@ -28,8 +28,8 @@ same as *asset_packer.py pack all* (this is to keep compatibility with the origi
 Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name' (does not work yet)
 
 # Roadmap
+- [x] pack specific asset pack command
 - [ ] create command
-- [ ] pack specific asset pack command
 - [ ] automatic file renaming
 - [ ] automatic file conversion
 - [ ] verbose error messages

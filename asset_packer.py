@@ -25,7 +25,7 @@ Usage :
         \033[3mCreates a directory with the correct file structure that can be used
         to prepare for the packing process.
         \033[0m
-    \033[32mpython3 asset_packer.py\033[0;33m pack <./Asset\\ Pack\\ Name>\033[0m
+    \033[32mpython3 asset_packer.py\033[0;33m pack <Asset\\ Pack\\ Directory>\033[0m
         \033[3mpacks the specified asset pack into './asset_packs/Asset\\ Pack\\ Name'
         \033[0m
     \033[32mpython3 asset_packer.py\033[0;33m pack all\033[0m
@@ -156,7 +156,8 @@ def pack_font(src: pathlib.Path, dst: pathlib.Path):
             shutil.copyfile(src, dst)
 
 
-def pack_everything_here(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
+def pack_everything(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
+    """Pack all asset packs in the source directory"""
     try:
         input(
             "\033[32mThis will pack all asset packs in the current directory.\n"
@@ -251,13 +252,92 @@ def pack_everything_here(source_directory: "str | pathlib.Path", output_director
                 logger(f"Compile: font for pack '{source.name}': {font.name}")
                 pack_font(font, packed / "Fonts" / font.name)
 
+        logger(f"Finished packing '{source.name}'")
+        logger(f"Saved to: {packed}")
+
 def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
     """Pack a specific asset pack"""
-    # asset_pack_path = pathlib.Path(asset_pack_path)
-    # output_directory = pathlib.Path(output_directory)
-    # logger(f"Input: {asset_pack_path}") # debug
-    # logger(f"Output: {output_directory}") # debug
-    pass
+    asset_pack_path = pathlib.Path(asset_pack_path)
+    output_directory = pathlib.Path(output_directory)
+    logger(f"Input: {asset_pack_path}") # debug
+    logger(f"Output: {output_directory}") # debug
+
+    if not asset_pack_path.is_dir():
+        logger(f"Error: {asset_pack_path} is not a directory")
+        return
+    
+    logger(f"Pack: custom user pack '{asset_pack_path.name}'")
+    packed = output_directory / asset_pack_path.name
+    logger(f"Packed: {packed}") # debug
+    if packed.exists():
+        logger(f"Removing existing pack: {packed}")
+        try:
+            if packed.is_dir():
+                shutil.rmtree(packed, ignore_errors=True)
+            else:
+                packed.unlink()
+        except Exception:
+            logger(f"Failed to remove existing pack: {packed}")
+            pass
+
+    # packing anims
+    if (asset_pack_path / "Anims/manifest.txt").exists():
+        logger(f"manifest.txt exists in {asset_pack_path / 'Anims'}")
+        (packed / "Anims").mkdir(parents=True, exist_ok=True) # ensure that the "Anims" directory exists
+        copy_file_as_lf(asset_pack_path / "Anims/manifest.txt", packed / "Anims/manifest.txt")
+        manifest = (asset_pack_path / "Anims/manifest.txt").read_bytes()
+        logger(f"Manifest: {manifest}") # debug
+
+        # Find all the anims in the manifest
+        for anim in re.finditer(rb"Name: (.*)", manifest):
+            anim = (
+                anim.group(1)
+                .decode()
+                .replace("\\", "/")
+                .replace("/", os.sep)
+                .replace("\r", "\n")
+                .strip()
+            )
+            logger(f"Compile: anim for pack '{asset_pack_path.name}': {anim}")
+            pack_anim(asset_pack_path / "Anims" / anim, packed / "Anims" / anim)
+
+    # packing icons
+    if (asset_pack_path / "Icons").is_dir():
+        for icons in (asset_pack_path / "Icons").iterdir():
+            if not icons.is_dir() or icons.name.startswith("."):
+                continue
+            for icon in icons.iterdir():
+                if icon.name.startswith("."):
+                    continue
+                if icon.is_dir():
+                    logger(
+                        f"Compile: icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}"
+                    )
+                    pack_icon_animated(
+                        icon, packed / "Icons" / icons.name / icon.name
+                    )
+                elif icon.is_file() and icon.suffix in (".png", ".bmx"):
+                    logger(
+                        f"Compile: icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}"
+                    )
+                    pack_icon_static(
+                        icon, packed / "Icons" / icons.name / icon.name
+                    )
+
+    # packing fonts
+    if (asset_pack_path / "Fonts").is_dir():
+        for font in (asset_pack_path / "Fonts").iterdir():
+            if (
+                not font.is_file()
+                or font.name.startswith(".")
+                or font.suffix not in (".c", ".u8f")
+            ):
+                continue
+            logger(f"Compile: font for pack '{asset_pack_path.name}': {font.name}")
+            pack_font(font, packed / "Fonts" / font.name)
+
+    logger(f"Finished packing '{asset_pack_path.name}'")
+    logger(f"Saved to: {packed}")
 
 
 if __name__ == "__main__":
@@ -277,12 +357,12 @@ if __name__ == "__main__":
 
                         here = pathlib.Path(__file__).absolute().parent
                         start = time.perf_counter()
-                        pack_everything_here(here, here / "asset_packs", logger=print)
+                        pack_everything(here, here / "asset_packs", logger=print)
                         end = time.perf_counter()
                         print(f"\nFinished in {round(end - start, 2)}s\n")
 
                     else:
-                        print("implemented yet...")
+                        pack_specific(sys.argv[2], pathlib.Path.cwd() / "asset_packs", logger=print)
                 else:
                     print(HELP_MESSAGE)
 
@@ -291,6 +371,6 @@ if __name__ == "__main__":
     else:
         here = pathlib.Path(__file__).absolute().parent
         start = time.perf_counter()
-        pack_everything_here(here, here / "asset_packs", logger=print)
+        pack_everything(here, here / "asset_packs", logger=print)
         end = time.perf_counter()
         print(f"\nFinished in {round(end - start, 2)}s\n")
