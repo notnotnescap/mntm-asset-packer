@@ -18,21 +18,25 @@ import heatshrink2
 HELP_MESSAGE = """The Asset packer will convert files to be efficient and compatible with the asset pack system used in Momentum.
 
 Usage :
-    \033[32mpython3 asset_packer.py\033[0;33m help\033[0m
+    \033[32mpython3 asset_packer.py \033[0;33;1mhelp\033[0m
         \033[3mDisplays this message
         \033[0m
-    \033[32mpython3 asset_packer.py\033[0;33m create <Asset Pack Name>\033[0m
+    \033[32mpython3 asset_packer.py \033[0;33;1mcreate <Asset Pack Name>\033[0m
         \033[3mCreates a directory with the correct file structure that can be used
         to prepare for the packing process.
         \033[0m
-    \033[32mpython3 asset_packer.py\033[0;33m pack <Asset\\ Pack\\ Directory>\033[0m
-        \033[3mpacks the specified asset pack into './asset_packs/Asset\\ Pack\\ Name'
+    \033[32mpython3 asset_packer.py \033[0;33;1mconvert <./Asset\\ Pack\\ Directory>\033[0m
+        \033[3mConverts all frames to .png files and renames them to the correct format.
+        (requires numbers in filenames)
         \033[0m
-    \033[32mpython3 asset_packer.py\033[0;33m pack all\033[0m
-        \033[3mpacks all asset packs in the current directory into './asset_packs/'
+    \033[32mpython3 asset_packer.py \033[0;33;1mpack <Asset\\ Pack\\ Directory>\033[0m
+        \033[3mPacks the specified asset pack into './asset_packs/Asset\\ Pack\\ Name'
+        \033[0m
+    \033[32mpython3 asset_packer.py \033[0;33;1mpack all\033[0m
+        \033[3mPacks all asset packs in the current directory into './asset_packs/'
         \033[0m
     \033[32mpython3 asset_packer.py\033[0m
-        \033[3msame as 'python3 asset_packer.py pack all'
+        \033[3mSame as 'python3 asset_packer.py pack all'
         (this is to keep compatibility with the original asset_packer.py)
         \033[0m
 """
@@ -182,13 +186,55 @@ def pack_font(src: pathlib.Path, dst: pathlib.Path):
             shutil.copyfile(src, dst)
 
 
-def format_frames(directory: pathlib.Path):
-    """converts all frames to png renames them "frame_N.png" (requires the image name to contain the frame number)"""
-    pass
+def convert_and_rename_frames(directory: "str | pathlib.Path", logger: typing.Callable):
+    """Converts all frames to png and renames them "frame_N.png" (requires the image name to contain the frame number)"""
+    already_formatted = True
+    for file in directory.iterdir():
+        if file.is_file() and file.suffix in (".jpg", ".jpeg", ".png"):
+            if not re.match(r"frame_\d+.png", file.name):
+                already_formatted = False
+                break
+    if already_formatted:
+        logger(f"\"{directory.name}\" anim is formatted")
+        return
+
+    try:
+        print(
+            f"\033[31mThis will convert all frames for the \"{directory.name}\" anim to png and rename them.\n"
+            "This action is irreversible, make sure to back up your files if needed.\n\033[0m"
+        )
+        input(
+            "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
+        )
+    except KeyboardInterrupt:
+        sys.exit(0)
+    print()
+    index = 1
+
+    for file in sorted(directory.iterdir(), key=lambda x: x.name):
+        # convert it to a png
+        if file.is_file() and file.suffix in (".jpg", ".jpeg", ".png"): # i'm sure more can be added here
+            filename = file.stem
+            if re.search(r"\d+", filename):
+                filename = f"frame_{index}.png"
+                index += 1
+            else:
+                filename = f"{filename}.png"
+
+            img = Image.open(file)
+            img.save(directory / filename)
+            file.unlink()
+
+
+def convert_and_rename_frames_for_all_anims(directory_for_anims: "str | pathlib.Path", logger: typing.Callable):
+    """Converts all frames to png and renames them "frame_N.png for all anims in the given anim folder." (requires the image name to contain the frame number)"""
+    for anim in directory_for_anims.iterdir():
+        if anim.is_dir():
+            convert_and_rename_frames(anim, logger)
 
 
 def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
-    """Pack a specific asset pack"""
+    """Packs a specific asset pack"""
     asset_pack_path = pathlib.Path(asset_pack_path)
     output_directory = pathlib.Path(output_directory)
     logger(f"Packing asset pack: {asset_pack_path}")
@@ -260,11 +306,13 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
 
 
 def pack_everything(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
-    """Pack all asset packs in the source directory"""
+    """Packs all asset packs in the source directory"""
     try:
-        input(
-            "\033[32mThis will pack all asset packs in the current directory.\n"
+        print(
+            "\033[31mThis will pack all asset packs in the current directory.\n"
             "The resulting asset packs will be saved to './asset_packs'\n\033[0m"
+        )
+        input(
             "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
         )
     except KeyboardInterrupt:
@@ -322,7 +370,7 @@ if __name__ == "__main__":
                 print(HELP_MESSAGE)
 
             case "create":
-                if len(sys.argv) > 2:
+                if len(sys.argv) == 3:
                     name = " ".join(sys.argv[2:])
                     create_asset_pack(name, pathlib.Path.cwd(), logger=print)
 
@@ -330,7 +378,7 @@ if __name__ == "__main__":
                     print(HELP_MESSAGE)
 
             case "pack":
-                if len(sys.argv) > 2:
+                if len(sys.argv) == 3:
                     if sys.argv[2] == "all":
 
                         here = pathlib.Path(__file__).absolute().parent
@@ -341,6 +389,12 @@ if __name__ == "__main__":
 
                     else:
                         pack_specific(sys.argv[2], pathlib.Path.cwd() / "asset_packs", logger=print)
+                else:
+                    print(HELP_MESSAGE)
+
+            case "convert":
+                if len(sys.argv) == 3:
+                    convert_and_rename_frames_for_all_anims(pathlib.Path(sys.argv[2]) / "Anims", logger=print)
                 else:
                     print(HELP_MESSAGE)
 
