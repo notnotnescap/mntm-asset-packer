@@ -16,7 +16,7 @@ Displays help message
 ```python3 asset_packer.py create <Asset Pack Name>```<br>
 Creates a directory with the correct file structure that can be used to prepare for the packing process.
 
-```python3 asset_packer.py convert <./Asset\ Pack\ Directory>```
+```python3 asset_packer.py convert <./Asset\ Pack\ Directory>```<br>
 Converts all frames to .png files and renames them to the correct format. (requires numbers in filenames)
 
 ```python3 asset_packer.py pack all```<br>
