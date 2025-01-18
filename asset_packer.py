@@ -187,122 +187,19 @@ def format_frames(directory: pathlib.Path):
     pass
 
 
-def pack_everything(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
-    """Pack all asset packs in the source directory"""
-    try:
-        input(
-            "\033[32mThis will pack all asset packs in the current directory.\n"
-            "The resulting asset packs will be saved to './asset_packs'\n\033[0m"
-            "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
-        )
-    except KeyboardInterrupt:
-        sys.exit(0)
-    print()
-
-    source_directory = pathlib.Path(source_directory)
-    output_directory = pathlib.Path(output_directory)
-    logger(f"Input: {source_directory}") # debug
-    logger(f"Output: {output_directory}") # debug
-
-    for source in source_directory.iterdir():
-        # Skip folders that are definitely not meant to be packed
-        if source == output_directory:
-            continue
-        if not source.is_dir() or source.name.startswith(".") or "venv" in source.name:
-            continue
-
-        logger(f"Source: {source}") # debug
-
-        logger(f"Pack: custom user pack '{source.name}'")
-        packed = output_directory / source.name
-        logger(f"Packed: {packed}") # debug
-        if packed.exists():
-            logger(f"Removing existing pack: {packed}")
-            try:
-                if packed.is_dir():
-                    shutil.rmtree(packed, ignore_errors=True)
-                else:
-                    packed.unlink()
-            except Exception:
-                logger(f"Failed to remove existing pack: {packed}")
-                pass
-
-        # packing anims
-        if (source / "Anims/manifest.txt").exists():
-            logger(f"manifest.txt exists in {source / 'Anims'}") # debug
-            (packed / "Anims").mkdir(parents=True, exist_ok=True) # ensure that the "Anims" directory exists
-            copy_file_as_lf(source / "Anims/manifest.txt", packed / "Anims/manifest.txt")
-            manifest = (source / "Anims/manifest.txt").read_bytes()
-            logger(f"Manifest: {manifest}") # debug
-
-            # Find all the anims in the manifest
-            for anim in re.finditer(rb"Name: (.*)", manifest):
-                anim = (
-                    anim.group(1)
-                    .decode()
-                    .replace("\\", "/")
-                    .replace("/", os.sep)
-                    .replace("\r", "\n")
-                    .strip()
-                )
-                logger(f"Compile: anim for pack '{source.name}': {anim}")
-                pack_anim(source / "Anims" / anim, packed / "Anims" / anim)
-
-        # packing icons
-        if (source / "Icons").is_dir():
-            for icons in (source / "Icons").iterdir():
-                if not icons.is_dir() or icons.name.startswith("."):
-                    continue
-                for icon in icons.iterdir():
-                    if icon.name.startswith("."):
-                        continue
-                    if icon.is_dir():
-                        logger(
-                            f"Compile: icon for pack '{source.name}': {icons.name}/{icon.name}"
-                        )
-                        pack_icon_animated(
-                            icon, packed / "Icons" / icons.name / icon.name
-                        )
-                    elif icon.is_file() and icon.suffix in (".png", ".bmx"):
-                        logger(
-                            f"Compile: icon for pack '{source.name}': {icons.name}/{icon.name}"
-                        )
-                        pack_icon_static(
-                            icon, packed / "Icons" / icons.name / icon.name
-                        )
-
-        # packing fonts
-        if (source / "Fonts").is_dir():
-            for font in (source / "Fonts").iterdir():
-                if (
-                    not font.is_file()
-                    or font.name.startswith(".")
-                    or font.suffix not in (".c", ".u8f")
-                ):
-                    continue
-                logger(f"Compile: font for pack '{source.name}': {font.name}")
-                pack_font(font, packed / "Fonts" / font.name)
-
-        logger(f"Finished packing '{source.name}'")
-        logger(f"Saved to: {packed}")
-
-
 def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
     """Pack a specific asset pack"""
     asset_pack_path = pathlib.Path(asset_pack_path)
     output_directory = pathlib.Path(output_directory)
-    logger(f"Input: {asset_pack_path}") # debug
-    logger(f"Output: {output_directory}") # debug
+    logger(f"Packing asset pack: {asset_pack_path}")
 
     if not asset_pack_path.is_dir():
         logger(f"Error: {asset_pack_path} is not a directory")
         return
     
-    logger(f"Pack: custom user pack '{asset_pack_path.name}'")
     packed = output_directory / asset_pack_path.name
-    logger(f"Packed: {packed}") # debug
+
     if packed.exists():
-        logger(f"Removing existing pack: {packed}")
         try:
             if packed.is_dir():
                 shutil.rmtree(packed, ignore_errors=True)
@@ -317,7 +214,6 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
         (packed / "Anims").mkdir(parents=True, exist_ok=True) # ensure that the "Anims" directory exists
         copy_file_as_lf(asset_pack_path / "Anims/manifest.txt", packed / "Anims/manifest.txt")
         manifest = (asset_pack_path / "Anims/manifest.txt").read_bytes()
-        logger(f"Manifest: {manifest}") # debug
 
         # Find all the anims in the manifest
         for anim in re.finditer(rb"Name: (.*)", manifest):
@@ -329,7 +225,7 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
                 .replace("\r", "\n")
                 .strip()
             )
-            logger(f"Compile: anim for pack '{asset_pack_path.name}': {anim}")
+            logger(f"Compiling anim for pack '{asset_pack_path.name}': {anim}")
             pack_anim(asset_pack_path / "Anims" / anim, packed / "Anims" / anim)
 
     # packing icons
@@ -341,19 +237,11 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
                 if icon.name.startswith("."):
                     continue
                 if icon.is_dir():
-                    logger(
-                        f"Compile: icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}"
-                    )
-                    pack_icon_animated(
-                        icon, packed / "Icons" / icons.name / icon.name
-                    )
+                    logger(f"Compiling icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}")
+                    pack_icon_animated(icon, packed / "Icons" / icons.name / icon.name)
                 elif icon.is_file() and icon.suffix in (".png", ".bmx"):
-                    logger(
-                        f"Compile: icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}"
-                    )
-                    pack_icon_static(
-                        icon, packed / "Icons" / icons.name / icon.name
-                    )
+                    logger(f"Compiling icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}")
+                    pack_icon_static(icon, packed / "Icons" / icons.name / icon.name)
 
     # packing fonts
     if (asset_pack_path / "Fonts").is_dir():
@@ -364,11 +252,36 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
                 or font.suffix not in (".c", ".u8f")
             ):
                 continue
-            logger(f"Compile: font for pack '{asset_pack_path.name}': {font.name}")
+            logger(f"Compiling font for pack '{asset_pack_path.name}': {font.name}")
             pack_font(font, packed / "Fonts" / font.name)
 
     logger(f"Finished packing '{asset_pack_path.name}'")
     logger(f"Saved to: {packed}")
+
+
+def pack_everything(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
+    """Pack all asset packs in the source directory"""
+    try:
+        input(
+            "\033[32mThis will pack all asset packs in the current directory.\n"
+            "The resulting asset packs will be saved to './asset_packs'\n\033[0m"
+            "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
+        )
+    except KeyboardInterrupt:
+        sys.exit(0)
+    print()
+
+    source_directory = pathlib.Path(source_directory)
+    output_directory = pathlib.Path(output_directory)
+
+    for source in source_directory.iterdir():
+        # Skip folders that are definitely not meant to be packed
+        if source == output_directory:
+            continue
+        if not source.is_dir() or source.name.startswith(".") or "venv" in source.name:
+            continue
+
+        pack_specific(source, output_directory, logger)
 
 
 def create_asset_pack(name: str, output_directory: "str | pathlib.Path", logger: typing.Callable):
