@@ -171,6 +171,17 @@ def pack_anim(src: pathlib.Path, dst: pathlib.Path):
     """Packs an anim"""
     if not (src / "meta.txt").is_file():
         return
+    if not any(re.match(r"frame_\d+.png", file.name) for file in src.iterdir()):
+        print(f"\033[31mNo frames with the required format found in \"{src.name}\" anim.\033[0m")
+        try:
+            input(
+                "Press [Enter] to convert and rename the frames or [Ctrl+C] to cancel\033[0m"
+            )
+        except KeyboardInterrupt:
+            sys.exit(0)
+        print()
+        convert_and_rename_frames(src, print)
+
     dst.mkdir(parents=True, exist_ok=True)
     for frame in src.iterdir():
         if not frame.is_file():
@@ -276,7 +287,6 @@ def convert_and_rename_frames(directory: "str | pathlib.Path", logger: typing.Ca
 
     for file in sorted(directory.iterdir(), key=lambda x: x.name):
         if file.is_file() and file.suffix in (".jpg", ".jpeg", ".png"):
-            #TODO: add support for other image formats
             filename = file.stem
             if re.search(r"\d+", filename):
                 filename = f"frame_{index}.png"
@@ -301,10 +311,10 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
     """Packs a specific asset pack"""
     asset_pack_path = pathlib.Path(asset_pack_path)
     output_directory = pathlib.Path(output_directory)
-    logger(f"Packing asset pack: {asset_pack_path}")
+    logger(f"Packing '\033[3m{asset_pack_path.name}\033[0m'")
 
     if not asset_pack_path.is_dir():
-        logger(f"\033[31mError: {asset_pack_path} is not a directory\033[0m")
+        logger(f"\033[31mError: '{asset_pack_path}' is not a directory\033[0m")
         return
 
     packed = output_directory / asset_pack_path.name
@@ -316,7 +326,7 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
             else:
                 packed.unlink()
         except (OSError, shutil.Error):
-            logger(f"Failed to remove existing pack: {packed}")
+            logger(f"\033[31mError: Failed to remove existing pack: '{packed}'\033[0m")
 
     # packing anims
     if (asset_pack_path / "Anims/manifest.txt").exists():
@@ -334,7 +344,7 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
                 .replace("\r", "\n")
                 .strip()
             )
-            logger(f"Compiling anim for pack '{asset_pack_path.name}': {anim}")
+            logger(f"Compiling anim '\033[3m{anim}\033[0m' for '\033[3m{asset_pack_path.name}\033[0m'")
             pack_anim(asset_pack_path / "Anims" / anim, packed / "Anims" / anim)
 
     # packing icons
@@ -364,16 +374,16 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
             logger(f"Compiling font for pack '{asset_pack_path.name}': {font.name}")
             pack_font(font, packed / "Fonts" / font.name)
 
-    logger(f"Finished packing '{asset_pack_path.name}'")
-    logger(f"Saved to: {packed}")
+    logger(f"\033[32mFinished packing '\033[3m{asset_pack_path.name}\033[23m'\033[0m")
+    logger(f"Saved to: '\033[33m{packed}\033[0m'")
 
 
 def pack_everything(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
     """Packs all asset packs in the source directory"""
     try:
         print(
-            "\033[31mThis will pack all asset packs in the current directory.\n"
-            "The resulting asset packs will be saved to './asset_packs'\n\033[0m"
+            "This will pack all asset packs in the current directory.\n"
+            "The resulting asset packs will be saved to './asset_packs'\n"
         )
         input(
             "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
