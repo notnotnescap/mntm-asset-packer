@@ -15,7 +15,7 @@ import sys
 from PIL import Image, ImageOps, ImageFile
 import heatshrink2
 
-HELP_MESSAGE = """The Asset packer will convert files to be efficient and compatible with the asset pack system used in Momentum.
+HELP_MESSAGE = """The Asset packer can be used to convert files to be efficient and compatible with the asset pack system used in Momentum.
 
 Usage :
     \033[32mpython3 asset_packer.py \033[0;33;1mhelp\033[0m
@@ -25,8 +25,8 @@ Usage :
         \033[3mCreates a directory with the correct file structure that can be used
         to prepare for the packing process.
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mpack <Asset\\ Pack\\ Directory>\033[0m
-        \033[3mPacks the specified asset pack into './asset_packs/Asset\\ Pack\\ Name'
+    \033[32mpython3 asset_packer.py \033[0;33;1mpack <./path/to/AssetPack>\033[0m
+        \033[3mPacks the specified asset pack into './asset_packs/AssetPack'
         \033[0m
     \033[32mpython3 asset_packer.py \033[0;33;1mpack all\033[0m
         \033[3mPacks all asset packs in the current directory into './asset_packs/'
@@ -34,13 +34,13 @@ Usage :
     \033[32mpython3 asset_packer.py\033[0m
         \033[3mSame as 'python3 asset_packer.py pack all'
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mconvert <./Asset\\ Pack\\ Directory>\033[0m
-        \033[3mConverts all frames to .png files and renames them to the correct format.
+    \033[32mpython3 asset_packer.py \033[0;33;1mconvert <./path/to/AssetPack>\033[0m
+        \033[3mConverts all anim frames to .png files and renames them to the correct format.
         (requires numbers in filenames)
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mrecover <./Anim/Path>\033[0m
+    \033[32mpython3 asset_packer.py \033[0;33;1mrecover <./AssetPack/example_anim>\033[0m
         \033[3mRecovers png frames from a compiled anim. (currently only works with anims)
-        Recovered assets are saved in './recovered/anim\\ name'
+        Recovered assets are saved in './recovered/example_anim'
         \033[0m
 """
 
