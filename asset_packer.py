@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-An improved asset packer for the Momentum firmware. This is a modification of the original asset_packer script by @Willy-JL
+An improved asset packer for the Momentum firmware.
+This is a modification of the original asset_packer script by @Willy-JL
 """
 
 import pathlib
@@ -12,10 +13,11 @@ import re
 import io
 import os
 import sys
-from PIL import Image, ImageOps, ImageFile
+from PIL import Image, ImageOps
 import heatshrink2
 
-HELP_MESSAGE = """The Asset packer can be used to convert files to be efficient and compatible with the asset pack system used in Momentum.
+HELP_MESSAGE = """The Asset packer can be used to convert files to be efficient and compatibl
+with the asset pack system used in Momentum.
 
 Usage :
     \033[32mpython3 asset_packer.py \033[0;33;1mhelp\033[0m
@@ -111,8 +113,9 @@ def convert_to_bmx(img: "Image.Image | pathlib.Path") -> bytes:
 
 
 def recover_png_from_bm(bm: "bytes | pathlib.Path", width: int, height: int) -> Image.Image:
-    """Converts a bitmap back to a png (same as convert_to_bm but in reverse)
-    The resulting png will not always be the same as the original image as some information is lost during the conversion"""
+    """Converts a bitmap back to a png (same as convert_to_bm but in reverse) The resulting png
+    will not always be the same as the original image as some information is lost during the
+    conversion"""
     if not isinstance(bm, bytes):
         bm = bm.read_bytes()
 
@@ -122,7 +125,7 @@ def recover_png_from_bm(bm: "bytes | pathlib.Path", width: int, height: int) -> 
         data_dec = heatshrink2.decompress(bm[4:], window_sz2=8, lookahead_sz2=4)
     else:
         data_dec = bm[1:]
-    
+
     img = Image.new("1", (width, height))
     img.putdata([1 - ((byte >> i) & 1) for byte in data_dec for i in range(8)])
 
@@ -143,13 +146,13 @@ def recover_anim_from_bm(src: "pathlib.Path", logger: typing.Callable):
     meta = src / "meta.txt"
     if os.path.exists(meta):
         shutil.copyfile(meta, dst / meta.name)
-        with open(meta, "r") as f:
+        with open(meta, "r", encoding="utf-8") as f:
             for line in f:
                 if line.startswith("Width:"):
                     width = int(line.split(":")[1].strip())
                 elif line.startswith("Height:"):
                     height = int(line.split(":")[1].strip())
-        logger(f"using width and height from meta.txt")
+        logger("using width and height from meta.txt")
     else:
         logger(f"meta.txt not found, assuming width={width}, height={height}")
 
@@ -165,6 +168,7 @@ def copy_file_as_lf(src: "pathlib.Path", dst: "pathlib.Path"):
 
 
 def pack_anim(src: pathlib.Path, dst: pathlib.Path):
+    """Packs an anim"""
     if not (src / "meta.txt").is_file():
         return
     dst.mkdir(parents=True, exist_ok=True)
@@ -182,6 +186,7 @@ def pack_anim(src: pathlib.Path, dst: pathlib.Path):
 
 
 def pack_icon_animated(src: pathlib.Path, dst: pathlib.Path):
+    """Packs an animated icon"""
     if not (src / "frame_rate").is_file() and not (src / "meta").is_file():
         return
     dst.mkdir(parents=True, exist_ok=True)
@@ -212,6 +217,7 @@ def pack_icon_animated(src: pathlib.Path, dst: pathlib.Path):
 
 
 def pack_icon_static(src: pathlib.Path, dst: pathlib.Path):
+    """Packs a static icon"""
     dst.parent.mkdir(parents=True, exist_ok=True)
     if src.suffix == ".png":
         dst.with_suffix(".bmx").write_bytes(convert_to_bmx(src))
@@ -221,6 +227,7 @@ def pack_icon_static(src: pathlib.Path, dst: pathlib.Path):
 
 
 def pack_font(src: pathlib.Path, dst: pathlib.Path):
+    """Packs a font"""
     dst.parent.mkdir(parents=True, exist_ok=True)
     if src.suffix == ".c":
         code = (
@@ -242,7 +249,8 @@ def pack_font(src: pathlib.Path, dst: pathlib.Path):
 
 
 def convert_and_rename_frames(directory: "str | pathlib.Path", logger: typing.Callable):
-    """Converts all frames to png and renames them "frame_N.png" (requires the image name to contain the frame number)"""
+    """Converts all frames to png and renames them "frame_N.png"
+    (requires the image name to contain the frame number)"""
     already_formatted = True
     for file in directory.iterdir():
         if file.is_file() and file.suffix in (".jpg", ".jpeg", ".png"):
@@ -267,8 +275,8 @@ def convert_and_rename_frames(directory: "str | pathlib.Path", logger: typing.Ca
     index = 1
 
     for file in sorted(directory.iterdir(), key=lambda x: x.name):
-        # convert it to a png
-        if file.is_file() and file.suffix in (".jpg", ".jpeg", ".png"): # i'm sure more can be added here
+        if file.is_file() and file.suffix in (".jpg", ".jpeg", ".png"):
+            #TODO: add support for other image formats
             filename = file.stem
             if re.search(r"\d+", filename):
                 filename = f"frame_{index}.png"
@@ -282,7 +290,8 @@ def convert_and_rename_frames(directory: "str | pathlib.Path", logger: typing.Ca
 
 
 def convert_and_rename_frames_for_all_anims(directory_for_anims: "str | pathlib.Path", logger: typing.Callable):
-    """Converts all frames to png and renames them "frame_N.png for all anims in the given anim folder." (requires the image name to contain the frame number)"""
+    """Converts all frames to png and renames them "frame_N.png for all anims in the given anim folder.
+    (requires the image name to contain the frame number)"""
     for anim in directory_for_anims.iterdir():
         if anim.is_dir():
             convert_and_rename_frames(anim, logger)
@@ -297,7 +306,7 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
     if not asset_pack_path.is_dir():
         logger(f"\033[31mError: {asset_pack_path} is not a directory\033[0m")
         return
-    
+
     packed = output_directory / asset_pack_path.name
 
     if packed.exists():
@@ -306,9 +315,8 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
                 shutil.rmtree(packed, ignore_errors=True)
             else:
                 packed.unlink()
-        except Exception:
+        except (OSError, shutil.Error):
             logger(f"Failed to remove existing pack: {packed}")
-            pass
 
     # packing anims
     if (asset_pack_path / "Anims/manifest.txt").exists():
@@ -387,47 +395,46 @@ def pack_everything(source_directory: "str | pathlib.Path", output_directory: "s
         pack_specific(source, output_directory, logger)
 
 
-def create_asset_pack(name: str, output_directory: "str | pathlib.Path", logger: typing.Callable):
+def create_asset_pack(asset_pack_name: str, output_directory: "str | pathlib.Path", logger: typing.Callable):
     """Creates the file structure for an asset pack"""
 
+    if not isinstance(output_directory, pathlib.Path):
+        output_directory = pathlib.Path(output_directory)
+
     # check for illegal characters
-    if not re.match(r"^[a-zA-Z0-9_\- ]+$", name):
-        logger(f"\033[31mError: '{name}' contains illegal characters\033[0m")
+    if not re.match(r"^[a-zA-Z0-9_\- ]+$", asset_pack_name):
+        logger(f"\033[31mError: '{asset_pack_name}' contains illegal characters\033[0m")
         return
 
-    if (output_directory / name).exists():
-        logger(f"\033[31mError: {output_directory / name} already exists\033[0m")
+    if (output_directory / asset_pack_name).exists():
+        logger(f"\033[31mError: {output_directory / asset_pack_name} already exists\033[0m")
         return
 
-    # creating a directory with the name of the asset pack
-    (output_directory / name).mkdir(parents=True, exist_ok=True)
-    # creating subdirectories for the asset pack
-    (output_directory / name / "Anims").mkdir(parents=True, exist_ok=True)
-    (output_directory / name / "Icons").mkdir(parents=True, exist_ok=True)
-    (output_directory / name / "Fonts").mkdir(parents=True, exist_ok=True)
+    (output_directory / asset_pack_name / "Anims").mkdir(parents=True)
+    (output_directory / asset_pack_name / "Icons").mkdir(parents=True)
+    (output_directory / asset_pack_name / "Fonts").mkdir(parents=True)
     # creating "manifest.txt" file
-    (output_directory / name / "Anims" / "manifest.txt")
-    with open(output_directory / name / "Anims" / "manifest.txt", "w") as f:
+    (output_directory / asset_pack_name / "Anims" / "manifest.txt").touch()
+    with open(output_directory / asset_pack_name / "Anims" / "manifest.txt", "w", encoding="utf-8") as f:
         f.write(EXAMPLE_MANIFEST)
     # creating an example anim
-    (output_directory / name / "Anims" / "example_anim").mkdir(parents=True, exist_ok=True)
-    with open(output_directory / name / "Anims" / "example_anim" / "meta.txt", "w") as f:
+    (output_directory / asset_pack_name / "Anims" / "example_anim").mkdir(parents=True)
+    (output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt").touch()
+    with open(output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt", "w", encoding="utf-8") as f:
         f.write(EXAMPLE_META)
 
-    logger(f"Created asset pack '{name}' in '{output_directory}'")
+    logger(f"Created asset pack '{asset_pack_name}' in '{output_directory}'")
 
 if __name__ == "__main__":
-    # for i, arg in enumerate(sys.argv): # debug
-    #     print(f"arg {i}: {arg}")
     if len(sys.argv) > 1:
         match sys.argv[1]:
             case "help" | "-h" | "--help":
                 print(HELP_MESSAGE)
 
             case "create":
-                if len(sys.argv) == 3:
-                    name = " ".join(sys.argv[2:])
-                    create_asset_pack(name, pathlib.Path.cwd(), logger=print)
+                if len(sys.argv) >= 3:
+                    NAME = " ".join(sys.argv[2:])
+                    create_asset_pack(NAME, pathlib.Path.cwd(), logger=print)
 
                 else:
                     print(HELP_MESSAGE)
