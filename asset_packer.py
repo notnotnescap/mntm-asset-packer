@@ -13,7 +13,6 @@ import io
 import os
 import sys
 from PIL import Image, ImageOps, ImageFile
-ImageFile.LOAD_TRUNCATED_IMAGES = True
 import heatshrink2
 
 HELP_MESSAGE = """The Asset packer will convert files to be efficient and compatible with the asset pack system used in Momentum.
@@ -134,7 +133,7 @@ def recover_png_from_bm(bm: "bytes | pathlib.Path", width: int, height: int) -> 
 def recover_anim_from_bm(src: "pathlib.Path", logger: typing.Callable):
     """Converts a bitmap to a png"""
     if not os.path.exists(src):
-        logger("\033[31mSource directory does not exist\033[0m")
+        logger(f"\033[31mError: {src} is not a directory\033[0m")
         return
 
     dst = pathlib.Path("recovered") / src.name
@@ -297,7 +296,7 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
     logger(f"Packing asset pack: {asset_pack_path}")
 
     if not asset_pack_path.is_dir():
-        logger(f"Error: {asset_pack_path} is not a directory")
+        logger(f"\033[31mError: {asset_pack_path} is not a directory\033[0m")
         return
     
     packed = output_directory / asset_pack_path.name
@@ -394,11 +393,11 @@ def create_asset_pack(name: str, output_directory: "str | pathlib.Path", logger:
 
     # check for illegal characters
     if not re.match(r"^[a-zA-Z0-9_\- ]+$", name):
-        logger(f"Error: '{name}' contains illegal characters")
+        logger(f"\033[31mError: '{name}' contains illegal characters\033[0m")
         return
 
     if (output_directory / name).exists():
-        logger(f"Error: {output_directory / name} already exists")
+        logger(f"\033[31mError: {output_directory / name} already exists\033[0m")
         return
 
     # creating a directory with the name of the asset pack
