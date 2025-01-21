@@ -25,6 +25,9 @@ Packs all asset packs in the current directory into './asset_packs/'
 ```python3 asset_packer.py```<br>
 same as *asset_packer.py pack all* (this is to keep compatibility with the original asset_packer.py)
 
+```python3 asset_packer.py recover <./Anim/Path>```<br>
+    Recovers png frames from a compiled anim. (currently only works with anims) Recovered assets are saved in './recovered/anim\ name'
+
 ```python3 asset_packer.py pack <./Asset\ Pack\ Directory>```<br>
 Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name'
 
@@ -33,6 +36,6 @@ Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name'
 - [x] create command
 - [x] automatic file renaming
 - [x] automatic file conversion
-- [ ] convert .bm or .bmx files back to .png -> recover command
+- [x] convert .bm or .bmx files back to .png -> recover command
 - [ ] hopefully replace the current asset packer script
 - [ ] GUI?

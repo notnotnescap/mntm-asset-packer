@@ -12,7 +12,8 @@ import re
 import io
 import os
 import sys
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 import heatshrink2
 
 HELP_MESSAGE = """The Asset packer will convert files to be efficient and compatible with the asset pack system used in Momentum.
@@ -34,6 +35,10 @@ Usage :
         \033[0m
     \033[32mpython3 asset_packer.py \033[0;33;1mpack all\033[0m
         \033[3mPacks all asset packs in the current directory into './asset_packs/'
+        \033[0m
+    \033[32mpython3 asset_packer.py \033[0;33;1mrecover <./Anim/Path>\033[0m
+        \033[3mRecovers png frames from a compiled anim. (currently only works with anims)
+        Recovered assets are saved in './recovered/anim\\ name'
         \033[0m
     \033[32mpython3 asset_packer.py\033[0m
         \033[3mSame as 'python3 asset_packer.py pack all'
@@ -69,7 +74,7 @@ Bubble slots: 0
 """
 
 
-def convert_bm(img: "Image.Image | pathlib.Path") -> bytes:
+def convert_to_bm(img: "Image.Image | pathlib.Path") -> bytes:
     """Converts an image to a bitmap"""
     if not isinstance(img, Image.Image):
         img = Image.open(img)
@@ -85,10 +90,12 @@ def convert_bm(img: "Image.Image | pathlib.Path") -> bytes:
     data_str = data[1:-1].replace(",", " ").replace("0x", "")
     data_bin = bytearray.fromhex(data_str)
 
+    # compressing the image
     data_encoded_str = heatshrink2.compress(data_bin, window_sz2=8, lookahead_sz2=4)
     data_enc = bytearray(data_encoded_str)
     data_enc = bytearray([len(data_enc) & 0xFF, len(data_enc) >> 8]) + data_enc
 
+    # marking the image as compressed
     if len(data_enc) + 2 < len(data_bin) + 1:
         return b"\x01\x00" + data_enc
     else:
@@ -96,12 +103,62 @@ def convert_bm(img: "Image.Image | pathlib.Path") -> bytes:
 
 
 def convert_to_bmx(img: "Image.Image | pathlib.Path") -> bytes:
+    """Converts an image to a bmx that contains image size info"""
     if not isinstance(img, Image.Image):
         img = Image.open(img)
 
     data = struct.pack("<II", *img.size)
-    data += convert_bm(img)
+    data += convert_to_bm(img)
     return data
+
+
+def recover_png_from_bm(bm: "bytes | pathlib.Path", width: int, height: int) -> Image.Image:
+    """Converts a bitmap back to a png (same as convert_to_bm but in reverse)
+    The resulting png will not always be the same as the original image as some information is lost during the conversion"""
+    if not isinstance(bm, bytes):
+        bm = bm.read_bytes()
+
+    # expected_length = (width * height + 7) // 8
+
+    if bm.startswith(b'\x01\x00'):
+        data_dec = heatshrink2.decompress(bm[4:], window_sz2=8, lookahead_sz2=4)
+    else:
+        data_dec = bm[1:]
+    
+    img = Image.new("1", (width, height))
+    img.putdata([1 - ((byte >> i) & 1) for byte in data_dec for i in range(8)])
+
+    return img
+
+
+def recover_anim_from_bm(src: "pathlib.Path", logger: typing.Callable):
+    """Converts a bitmap to a png"""
+    if not os.path.exists(src):
+        logger("\033[31mSource directory does not exist\033[0m")
+        return
+
+    dst = pathlib.Path("recovered") / src.name
+    dst.mkdir(parents=True, exist_ok=True)
+
+    width = 128
+    height = 64
+    meta = src / "meta.txt"
+    if os.path.exists(meta):
+        shutil.copyfile(meta, dst / meta.name)
+        with open(meta, "r") as f:
+            for line in f:
+                if line.startswith("Width:"):
+                    width = int(line.split(":")[1].strip())
+                elif line.startswith("Height:"):
+                    height = int(line.split(":")[1].strip())
+        logger(f"using width and height from meta.txt")
+    else:
+        logger(f"meta.txt not found, assuming width={width}, height={height}")
+
+    for file in src.iterdir():
+        if file.is_file() and file.suffix == ".bm":
+            img = recover_png_from_bm(file.read_bytes(), width, height)
+            img.save(dst / file.with_suffix(".png").name)
 
 
 def copy_file_as_lf(src: "pathlib.Path", dst: "pathlib.Path"):
@@ -120,7 +177,7 @@ def pack_anim(src: pathlib.Path, dst: pathlib.Path):
             copy_file_as_lf(frame, dst / frame.name)
         elif frame.name.startswith("frame_"):
             if frame.suffix == ".png":
-                (dst / frame.with_suffix(".bm").name).write_bytes(convert_bm(frame))
+                (dst / frame.with_suffix(".bm").name).write_bytes(convert_to_bm(frame))
             elif frame.suffix == ".bm":
                 if not (dst / frame.name).is_file():
                     shutil.copyfile(frame, dst / frame.name)
@@ -146,7 +203,7 @@ def pack_icon_animated(src: pathlib.Path, dst: pathlib.Path):
             if frame.suffix == ".png":
                 if not size:
                     size = Image.open(frame).size
-                dst_frame.write_bytes(convert_bm(frame))
+                dst_frame.write_bytes(convert_to_bm(frame))
                 frame_count += 1
             elif frame.suffix == ".bm":
                 if frame.with_suffix(".png") not in files:
@@ -326,7 +383,7 @@ def pack_everything(source_directory: "str | pathlib.Path", output_directory: "s
         # Skip folders that are definitely not meant to be packed
         if source == output_directory:
             continue
-        if not source.is_dir() or source.name.startswith(".") or "venv" in source.name:
+        if not source.is_dir() or source.name.startswith(".") or source.name in ("venv", "recovered") :
             continue
 
         pack_specific(source, output_directory, logger)
@@ -397,6 +454,13 @@ if __name__ == "__main__":
                     convert_and_rename_frames_for_all_anims(pathlib.Path(sys.argv[2]) / "Anims", logger=print)
                 else:
                     print(HELP_MESSAGE)
+
+            case "recover":
+                if len(sys.argv) == 3:
+                    start = time.perf_counter()
+                    recover_anim_from_bm(pathlib.Path(sys.argv[2]), logger=print)
+                    end = time.perf_counter()
+                    print(f"Finished in {round(end - start, 2)}s")
 
             case _:
                 print(HELP_MESSAGE)

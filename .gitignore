@@ -1,6 +1,6 @@
 test*
 asset_packs
-recover
+recovered
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
