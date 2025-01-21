@@ -16,8 +16,8 @@ Displays help message
 ```python3 asset_packer.py create <Asset Pack Name>```<br>
 Creates a directory with the correct file structure that can be used to prepare for the packing process.
 
-```python3 asset_packer.py convert <./Asset\ Pack\ Directory>```<br>
-Converts all frames to .png files and renames them to the correct format. (requires numbers in filenames)
+```python3 asset_packer.py pack <./Asset\ Pack\ Directory>```<br>
+Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name'
 
 ```python3 asset_packer.py pack all```<br>
 Packs all asset packs in the current directory into './asset_packs/'
@@ -25,11 +25,11 @@ Packs all asset packs in the current directory into './asset_packs/'
 ```python3 asset_packer.py```<br>
 same as *asset_packer.py pack all* (this is to keep compatibility with the original asset_packer.py)
 
+```python3 asset_packer.py convert <./Asset\ Pack\ Directory>```<br>
+Converts all frames to .png files and renames them to the correct format. (requires numbers in filenames)
+
 ```python3 asset_packer.py recover <./Anim/Path>```<br>
     Recovers png frames from a compiled anim. (currently only works with anims) Recovered assets are saved in './recovered/anim\ name'
-
-```python3 asset_packer.py pack <./Asset\ Pack\ Directory>```<br>
-Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name'
 
 # Roadmap
 - [x] pack specific asset pack command

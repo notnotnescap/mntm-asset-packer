@@ -25,23 +25,22 @@ Usage :
         \033[3mCreates a directory with the correct file structure that can be used
         to prepare for the packing process.
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mconvert <./Asset\\ Pack\\ Directory>\033[0m
-        \033[3mConverts all frames to .png files and renames them to the correct format.
-        (requires numbers in filenames)
-        \033[0m
     \033[32mpython3 asset_packer.py \033[0;33;1mpack <Asset\\ Pack\\ Directory>\033[0m
         \033[3mPacks the specified asset pack into './asset_packs/Asset\\ Pack\\ Name'
         \033[0m
     \033[32mpython3 asset_packer.py \033[0;33;1mpack all\033[0m
         \033[3mPacks all asset packs in the current directory into './asset_packs/'
         \033[0m
+    \033[32mpython3 asset_packer.py\033[0m
+        \033[3mSame as 'python3 asset_packer.py pack all'
+        \033[0m
+    \033[32mpython3 asset_packer.py \033[0;33;1mconvert <./Asset\\ Pack\\ Directory>\033[0m
+        \033[3mConverts all frames to .png files and renames them to the correct format.
+        (requires numbers in filenames)
+        \033[0m
     \033[32mpython3 asset_packer.py \033[0;33;1mrecover <./Anim/Path>\033[0m
         \033[3mRecovers png frames from a compiled anim. (currently only works with anims)
         Recovered assets are saved in './recovered/anim\\ name'
-        \033[0m
-    \033[32mpython3 asset_packer.py\033[0m
-        \033[3mSame as 'python3 asset_packer.py pack all'
-        (this is to keep compatibility with the original asset_packer.py)
         \033[0m
 """
 
