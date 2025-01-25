@@ -101,8 +101,7 @@ def convert_to_bm(img: "Image.Image | pathlib.Path") -> bytes:
     # marking the image as compressed
     if len(data_enc) + 2 < len(data_bin) + 1:
         return b"\x01\x00" + data_enc
-    else:
-        return b"\x00" + data_bin
+    return b"\x00" + data_bin
 
 
 def convert_to_bmx(img: "Image.Image | pathlib.Path") -> bytes:
