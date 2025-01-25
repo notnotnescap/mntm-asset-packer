@@ -39,6 +39,6 @@ Converts all frames to .png files and renames them to the correct format. (requi
 # Features added to the original asset packer
 note : the improved asset packer is backwards compatible with the original asset packer
 - Packing specific asset packs
-- A create command to create the necessary file structure for an asset pack
+- A create command to help the user create the necessary file structure for an asset pack
 - Automatic file renaming and conversion
-- Asset pack recovery from compiled state
+- Asset pack recovery from compiled state (not fully implemented yet)
