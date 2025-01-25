@@ -36,10 +36,9 @@ same as *asset_packer.py pack all* (this is to keep compatibility with the origi
 Converts all frames to .png files and renames them to the correct format. (requires numbers in filenames)
 
 
-# Roadmap
-- [x] pack specific asset pack command
-- [x] create command
-- [x] automatic file renaming
-- [x] automatic file conversion
-- [x] convert .bm or .bmx files back to .png -> recover command
-- [ ] hopefully replace the current asset packer script
+# Features added to the original asset packer
+note : the improved asset packer is backwards compatible with the original asset packer
+- Packing specific asset packs
+- A create command to create the necessary file structure for an asset pack
+- Automatic file renaming and conversion
+- Asset pack recovery from compiled state
