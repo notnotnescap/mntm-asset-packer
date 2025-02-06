@@ -44,6 +44,6 @@ note : the improved asset packer is backwards compatible with the original asset
 - Asset pack recovery from compiled state (not fully implemented yet)
 
 # More information
-General : https://github.com/Kuronons/FZ_graphics
-Meta file : https://flipper.wiki/tutorials/Animation_guide_meta/Meta_settings_guide/
-Custom fonts : https://flipper.wiki/tutorials/f0_fonts_guide/guide/
+General : https://github.com/Kuronons/FZ_graphics <br>
+Meta file : https://flipper.wiki/tutorials/Animation_guide_meta/Meta_settings_guide/ <br>
+Custom fonts : https://flipper.wiki/tutorials/f0_fonts_guide/guide/ <br>
