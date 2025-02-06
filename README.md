@@ -42,3 +42,8 @@ note : the improved asset packer is backwards compatible with the original asset
 - A create command to help the user create the necessary file structure for an asset pack
 - Automatic file renaming and conversion
 - Asset pack recovery from compiled state (not fully implemented yet)
+
+# More information
+General : https://github.com/Kuronons/FZ_graphics
+Meta file : https://flipper.wiki/tutorials/Animation_guide_meta/Meta_settings_guide/
+Custom fonts : https://flipper.wiki/tutorials/f0_fonts_guide/guide/

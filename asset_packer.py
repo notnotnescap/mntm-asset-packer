@@ -62,6 +62,8 @@ Weight: 8
 
 EXAMPLE_META = """Filetype: Flipper Animation
 Version: 1
+# More info on meta settings:
+# https://flipper.wiki/tutorials/Animation_guide_meta/Meta_settings_guide/
 
 Width: 128
 Height: 64
@@ -69,7 +71,7 @@ Passive frames: 24
 Active frames: 0
 Frames order: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
 Active cycles: 0
-Frame rate: 1
+Frame rate: 2
 Duration: 3600
 Active cooldown: 0
 
@@ -544,18 +546,23 @@ def create_asset_pack(asset_pack_name: str, output_directory: "str | pathlib.Pat
         logger(f"\033[31mError: {output_directory / asset_pack_name} already exists\033[0m")
         return
 
+    generate_example_files = input("Add an example meta.txt and manifest.txt? (Y/n) : ").lower() == "y"
+
     (output_directory / asset_pack_name / "Anims").mkdir(parents=True)
     (output_directory / asset_pack_name / "Icons").mkdir(parents=True)
     (output_directory / asset_pack_name / "Fonts").mkdir(parents=True)
+    (output_directory / asset_pack_name / "Passport").mkdir(parents=True)
     # creating "manifest.txt" file
     (output_directory / asset_pack_name / "Anims" / "manifest.txt").touch()
-    with open(output_directory / asset_pack_name / "Anims" / "manifest.txt", "w", encoding="utf-8") as f:
-        f.write(EXAMPLE_MANIFEST)
+    if generate_example_files:
+        with open(output_directory / asset_pack_name / "Anims" / "manifest.txt", "w", encoding="utf-8") as f:
+            f.write(EXAMPLE_MANIFEST)
     # creating an example anim
     (output_directory / asset_pack_name / "Anims" / "example_anim").mkdir(parents=True)
     (output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt").touch()
-    with open(output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt", "w", encoding="utf-8") as f:
-        f.write(EXAMPLE_META)
+    if generate_example_files:
+        with open(output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt", "w", encoding="utf-8") as f:
+            f.write(EXAMPLE_META)
 
     logger(f"Created asset pack '{asset_pack_name}' in '{output_directory}'")
 
