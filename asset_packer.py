@@ -131,7 +131,19 @@ def recover_from_bm(bm: "bytes | pathlib.Path", width: int, height: int) -> Imag
         data_dec = bm[1:]
 
     img = Image.new("1", (width, height))
-    img.putdata([1 - ((byte >> i) & 1) for byte in data_dec for i in range(8)])
+
+    pixels = []
+    num_target_pixels = width * height
+    for byte_val in data_dec:
+        for i in range(8):
+            if len(pixels) < num_target_pixels:
+                pixels.append(1 - ((byte_val >> i) & 1))
+            else:
+                break 
+        if len(pixels) >= num_target_pixels:
+            break
+
+    img.putdata(pixels)
 
     return img
 
