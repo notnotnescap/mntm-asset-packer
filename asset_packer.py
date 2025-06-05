@@ -244,20 +244,48 @@ def pack_animated_icon(src: pathlib.Path, dst: pathlib.Path):
 
 def recover_animated_icon(src: pathlib.Path, dst: pathlib.Path):
     """Recovers an animated icon"""
-    if not (src / "frame_rate").is_file() and not (src / "meta").is_file():
+    meta_file_path = src / "meta"
+
+    if not meta_file_path.is_file():
         return
-    # read size info
-    size = None
-    frame_rate = None
-    with open(src / "meta", "rb") as f:
-        size = struct.unpack("<IIII", f.read())
-        frame_rate = size[2]
-        size = size[:2]
+
+    unpacked_meta_data = None
+    try:
+        with open(meta_file_path, "rb") as f:
+            expected_bytes_count = struct.calcsize("<IIII")
+            data_bytes = f.read(expected_bytes_count)
+            if len(data_bytes) < expected_bytes_count:
+                print(f"Error: Meta file '{meta_file_path}' is too short or corrupted.")
+                return
+            unpacked_meta_data = struct.unpack("<IIII", data_bytes)
+    except struct.error:
+        print(f"Error: Failed to unpack meta file '{meta_file_path}'. It might be corrupted.")
+        return
+    except Exception as e: # Catch other potential IO errors
+        print(f"Error reading meta file '{meta_file_path}': {e}")
+        return
+
+    # unpacked_meta_data should be (width, height, frame_rate, frame_count)
+    image_width = unpacked_meta_data[0]
+    image_height = unpacked_meta_data[1]
+    frame_rate_value = unpacked_meta_data[2]
+    number_of_frames = unpacked_meta_data[3]
+
     dst.mkdir(parents=True, exist_ok=True)
-    for i in range(size[2]):
-        frame = recover_from_bm(src / f"frame_{i:02}.bm", size[0], size[1])
-        frame.save(dst / f"frame_{i:02}.png")
-    (dst / "frame_rate").write_text(str(frame_rate))
+    for i in range(number_of_frames):
+        frame_bm_file_path = src / f"frame_{i:02}.bm"
+        if not frame_bm_file_path.is_file():
+            print(f"Warning: Frame file '{frame_bm_file_path}' not found. Skipping.")
+            continue  # skip this frame if the .bm file is missing
+
+        try:
+            frame = recover_from_bm(frame_bm_file_path, image_width, image_height)
+            frame.save(dst / f"frame_{i:02}.png")
+        except Exception as e:
+            print(f"Error recovering or saving frame '{frame_bm_file_path}': {e}")
+            continue # skip to the next frame if an error occurs
+
+    (dst / "frame_rate").write_text(str(frame_rate_value))
 
 
 def pack_static_icon(src: pathlib.Path, dst: pathlib.Path):

@@ -6,6 +6,7 @@
 # test files
 test
 asset_packs
+recovered
 
 # Python
 __pycache__/
