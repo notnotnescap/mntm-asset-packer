@@ -598,21 +598,19 @@ def create_asset_pack(asset_pack_name: str, output_directory: "str | pathlib.Pat
         logger(f"\033[31mError: {output_directory / asset_pack_name} already exists\033[0m")
         return
 
-    generate_example_files = input("Add an example meta.txt and manifest.txt? (Y/n) : ").lower() == "y"
+    generate_example_files = input("Create example for anim structure? (y/N) : ").lower() == "y"
 
     (output_directory / asset_pack_name / "Anims").mkdir(parents=True)
     (output_directory / asset_pack_name / "Icons").mkdir(parents=True)
     (output_directory / asset_pack_name / "Fonts").mkdir(parents=True)
     (output_directory / asset_pack_name / "Passport").mkdir(parents=True)
     # creating "manifest.txt" file
-    (output_directory / asset_pack_name / "Anims" / "manifest.txt").touch()
     if generate_example_files:
+        (output_directory / asset_pack_name / "Anims" / "manifest.txt").touch()
         with open(output_directory / asset_pack_name / "Anims" / "manifest.txt", "w", encoding="utf-8") as f:
             f.write(EXAMPLE_MANIFEST)
-    # creating an example anim
-    (output_directory / asset_pack_name / "Anims" / "example_anim").mkdir(parents=True)
-    (output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt").touch()
-    if generate_example_files:
+        (output_directory / asset_pack_name / "Anims" / "example_anim").mkdir(parents=True)
+        (output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt").touch()
         with open(output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt", "w", encoding="utf-8") as f:
             f.write(EXAMPLE_META)
 
