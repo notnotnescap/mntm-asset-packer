@@ -26,7 +26,7 @@ Packs all asset packs in the current directory into './asset_packs/'
 same as *asset_packer.py pack all* (this is to keep compatibility with the original asset_packer.py)
 
 ```python3 asset_packer.py recover <./asset_packs/AssetPack>```<br>
-    Recovers png frames from a compiled anim. (currently only works with anims) Recovered assets are saved in './recovered/example_anim'
+    Recovers png frames from a compiled anim. Recovered assets are saved in './recovered/example_anim'
 
 ```python3 asset_packer.py recover all```<br>
     Recovers all asset packs in './asset_packs/' into './recovered/'
@@ -41,7 +41,7 @@ note : the improved asset packer is backwards compatible with the original asset
 - Packing specific asset packs
 - A create command to help the user create the necessary file structure for an asset pack
 - Automatic file renaming and conversion
-- Asset pack recovery from compiled state (not fully implemented yet)
+- Asset pack recovery from compiled state (still need to implement font recovery)
 
 # More information
 General : https://github.com/Kuronons/FZ_graphics <br>

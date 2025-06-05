@@ -246,7 +246,19 @@ def recover_animated_icon(src: pathlib.Path, dst: pathlib.Path):
     """Recovers an animated icon"""
     if not (src / "frame_rate").is_file() and not (src / "meta").is_file():
         return
-    pass #TODO: implement
+    # read size info
+    size = None
+    frame_rate = None
+    with open(src / "meta", "rb") as f:
+        size = struct.unpack("<IIII", f.read())
+        frame_rate = size[2]
+        size = size[:2]
+    dst.mkdir(parents=True, exist_ok=True)
+    for i in range(size[2]):
+        frame = recover_from_bm(src / f"frame_{i:02}.bm", size[0], size[1])
+        frame.save(dst / f"frame_{i:02}.png")
+    (dst / "frame_rate").write_text(str(frame_rate))
+
 
 def pack_static_icon(src: pathlib.Path, dst: pathlib.Path):
     """Packs a static icon"""
@@ -471,7 +483,7 @@ def recover_specific(asset_pack_path: "str | pathlib.Path", output_directory: "s
         #         continue
         #     logger(f"Compiling font for pack '{asset_pack_path.name}': {font.name}")
         #     pack_font(font, recovered / "Fonts" / font.name)
-        logger("Fonts recovery not implemented yet")
+        logger("Fonts recovery not implemented yet") #TODO: implement
 
     logger(f"\033[32mFinished recovering '\033[3m{asset_pack_path.name}\033[23m'\033[0m")
     logger(f"Saved to: '\033[33m{recovered}\033[0m'")
@@ -565,6 +577,7 @@ def create_asset_pack(asset_pack_name: str, output_directory: "str | pathlib.Pat
             f.write(EXAMPLE_META)
 
     logger(f"Created asset pack '{asset_pack_name}' in '{output_directory}'")
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
