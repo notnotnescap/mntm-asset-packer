@@ -1,5 +1,5 @@
 # Improved Asset Packer For Momentum
- An attempt to improve the asset packer script to make it more accessible and easier to use.
+An improved asset packer script to make the process of creating and packing asset packs for the Momentum firmware easier.
 
 # Setup
 
@@ -7,6 +7,8 @@
 2. Create virtual environment `python3 -m venv venv`
 3. Activate the virtual environment `source venv/bin/activate`
 4. Install the requirements `pip3 install -r requirements.txt`
+
+[uv](https://docs.astral.sh/uv/) can be used to run the script without needing to install the requirements globally: `uv run asset_packer.py`.
 
 # Usage
 

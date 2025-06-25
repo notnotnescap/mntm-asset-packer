@@ -1,0 +1,10 @@
+[project]
+name = "improved-asset-packer-for-momentum"
+version = "0.1.0"
+description = "An improved asset packer script to make the process of creating and packing asset packs for the Momentum firmware easier."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "heatshrink2>=0.13.0",
+    "pillow>=11.2.1",
+]

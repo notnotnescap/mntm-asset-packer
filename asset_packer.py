@@ -16,8 +16,8 @@ import sys
 from PIL import Image, ImageOps
 import heatshrink2
 
-HELP_MESSAGE = """The Asset packer can be used to convert files to be efficient and compatibl
-with the asset pack system used in Momentum.
+HELP_MESSAGE = """The asset packer converts animations with a specific structure to be efficient and compatible
+with the asset pack system used in Momentum. More info: https://github.com/Kuronons/FZ_graphics
 
 Usage :
     \033[32mpython3 asset_packer.py \033[0;33;1mhelp\033[0m
