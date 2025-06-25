@@ -1,51 +1,67 @@
 # Improved Asset Packer For Momentum
-An improved asset packer script to make the process of creating and packing asset packs for the Momentum firmware easier.
+
+An improved asset packer script to make the process of creating and packing asset packs for the Momentum firmware easier. This script is designed to be backwards compatible with the original packer while adding new features for a better user experience.
+
+# Features
+
+This improved packer adds several features over the original:
+
+-   **Pack specific asset packs**: No need to pack everything at once.
+-   **Create command**: Quickly scaffold the necessary file structure for a new asset pack.
+-   **Automatic file conversion**: Automatically convert and rename image frames for animations.
+-   **Asset pack recovery**: Recover PNGs and metadata from compiled asset packs. (Note: Font recovery is not yet implemented).
 
 # Setup
 
-1. Clone the repository
-2. Create virtual environment `python3 -m venv venv`
-3. Activate the virtual environment `source venv/bin/activate`
-4. Install the requirements `pip3 install -r requirements.txt`
+## Using `venv` (standard Python)
 
-[uv](https://docs.astral.sh/uv/) can be used to run the script without needing to install the requirements globally: `uv run asset_packer.py`.
+1.  Clone this repository and navigate into its directory.
+2.  Create and activate a virtual environment:
+    ```sh
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+3.  Install the required dependencies from [`requirements.txt`](requirements.txt):
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+## Using `uv`
+
+If you have [uv](https://docs.astral.sh/uv/) installed, you can use it to run the script. It will handle creating an environment and installing dependencies from [`pyproject.toml`](pyproject.toml) automatically.
+
+After cloning the repository, you can run any script command like this:
+```sh
+uv run -- python asset_packer.py help
+```
 
 # Usage
 
-```python3 asset_packer.py help```<br>
-Displays help message
+The script is invoked from the command line. Here are the available commands:
 
-```python3 asset_packer.py create <Asset Pack Name>```<br>
-Creates a directory with the correct file structure that can be used to prepare for the packing process.
+`python3 asset_packer.py help`
+: Displays a detailed help message with all available commands.
 
-```python3 asset_packer.py pack <./path/to/AssetPack>```<br>
-Packs the specified asset pack into './asset_packs/Asset\ Pack\ Name'
+`python3 asset_packer.py create <Asset Pack Name>`
+: Creates a directory with the correct file structure to start a new asset pack.
 
-```python3 asset_packer.py pack all```<br>
-Packs all asset packs in the current directory into './asset_packs/'
+`python3 asset_packer.py pack <./path/to/AssetPack>`
+: Packs a single, specified asset pack into the `./asset_packs/` directory.
 
-```python3 asset_packer.py```<br>
-same as *asset_packer.py pack all* (this is to keep compatibility with the original asset_packer.py)
+`python3 asset_packer.py pack all`
+: Packs all valid asset pack folders found in the current directory into `./asset_packs/`. This is the default action if no command is provided.
 
-```python3 asset_packer.py recover <./asset_packs/AssetPack>```<br>
-    Recovers png frames from a compiled anim. Recovered assets are saved in './recovered/example_anim'
+`python3 asset_packer.py recover <./asset_packs/AssetPack>`
+: Recovers a compiled asset pack back to its source form (e.g., `.bmx` to `.png`). The recovered pack is saved in `./recovered/<AssetPackName>`.
 
-```python3 asset_packer.py recover all```<br>
-    Recovers all asset packs in './asset_packs/' into './recovered/'
+`python3 asset_packer.py recover all`
+: Recovers all asset packs from the `./asset_packs/` directory into the `./recovered/` directory.
 
+`python3 asset_packer.py convert <./path/to/AssetPack>`
+: Converts and renames all animation frames in an asset pack to the standard `frame_N.png` format.
 
-```python3 asset_packer.py convert <./path/to/AssetPack>```<br>
-Converts all frames to .png files and renames them to the correct format. (requires numbers in filenames)
+# More Information
 
-
-# Features added to the original asset packer
-note : the improved asset packer is backwards compatible with the original asset packer
-- Packing specific asset packs
-- A create command to help the user create the necessary file structure for an asset pack
-- Automatic file renaming and conversion
-- Asset pack recovery from compiled state (still need to implement font recovery)
-
-# More information
-General : https://github.com/Kuronons/FZ_graphics <br>
-Meta file : https://flipper.wiki/tutorials/Animation_guide_meta/Meta_settings_guide/ <br>
-Custom fonts : https://flipper.wiki/tutorials/f0_fonts_guide/guide/ <br>
+-   **General Asset Info**: [https://github.com/Kuronons/FZ_graphics](https://github.com/Kuronons/FZ_graphics)
+-   **Animation `meta.txt` Guide**: [https://flipper.wiki/tutorials/Animation_guide_meta/Meta_settings_guide/](https://flipper.wiki/tutorials/Animation_guide_meta/Meta_settings_guide/)
+-   **Custom Fonts Guide**: [https://flipper.wiki/tutorials/f0_fonts_guide/guide/](https://flipper.wiki/tutorials/f0_fonts_guide/guide/)
