@@ -32,7 +32,7 @@ If you have [uv](https://docs.astral.sh/uv/) installed, you can use it to run th
 
 After cloning the repository, you can run any script command like this:
 ```sh
-uv run -- python asset_packer.py help
+uv run asset_packer.py help
 ```
 
 # Usage
