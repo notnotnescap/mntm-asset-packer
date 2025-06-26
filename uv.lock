@@ -15,8 +15,8 @@ wheels = [
 ]
 
 [[package]]
-name = "mtm-asset-packer"
-version = "0.1.7"
+name = "mntm-asset-packer"
+version = "1.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "heatshrink2" },

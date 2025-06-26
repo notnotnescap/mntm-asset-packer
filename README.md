@@ -1,4 +1,4 @@
-# mtm-asset-packer
+# mntm-asset-packer
 
 An improved asset packer script to make the process of creating asset packs for the [Momentum firmware](https://momentum-fw.dev/) easier. This script is designed to be backwards compatible with the original packer while adding new features for a better user experience.
 
@@ -20,19 +20,19 @@ If you don't have `uv` installed, follow [these](https://docs.astral.sh/uv/getti
 
 You can quickly run the script with this command:
 ```sh
-uvx mtm-asset-packer help
+uvx mntm-asset-packer help
 ```
 
 To install, use this command:
 ```sh
-uv tool install mtm-asset-packer
-mtm-asset-packer help
+uv tool install mntm-asset-packer
+mntm-asset-packer help
 ```
 
 or using pip:
 ```sh
-pip install mtm-asset-packer
-mtm-asset-packer help
+pip install mntm-asset-packer
+mntm-asset-packer help
 ```
 
 ## Using venv
@@ -51,27 +51,27 @@ mtm-asset-packer help
 
 # Usage
 
-If you run the script directly, replace `mtm-asset-packer` with `python3 mtm_asset_packer.py` in the commands below.
+If you run the script directly, replace `mntm-asset-packer` with `python3 mntm_asset_packer.py` in the commands below.
 
-`mtm-asset-packer help`
+`mntm-asset-packer help`
 : Displays a detailed help message with all available commands.
 
-`mtm-asset-packer create <Asset Pack Name>`
+`mntm-asset-packer create <Asset Pack Name>`
 : Creates a directory with the correct file structure to start a new asset pack.
 
-`mtm-asset-packer pack <./path/to/AssetPack>`
+`mntm-asset-packer pack <./path/to/AssetPack>`
 : Packs a single, specified asset pack into the `./asset_packs/` directory.
 
-`mtm-asset-packer pack all`
+`mntm-asset-packer pack all`
 : Packs all valid asset pack folders found in the current directory into `./asset_packs/`. This is the default action if no command is provided.
 
-`mtm-asset-packer recover <./asset_packs/AssetPack>`
+`mntm-asset-packer recover <./asset_packs/AssetPack>`
 : Recovers a compiled asset pack back to its source form (e.g., `.bmx` to `.png`). The recovered pack is saved in `./recovered/<AssetPackName>`.
 
-`mtm-asset-packer recover all`
+`mntm-asset-packer recover all`
 : Recovers all asset packs from the `./asset_packs/` directory into the `./recovered/` directory.
 
-`mtm-asset-packer convert <./path/to/AssetPack>`
+`mntm-asset-packer convert <./path/to/AssetPack>`
 : Converts and renames all animation frames in an asset pack to the standard `frame_N.png` format.
 
 # More Information
