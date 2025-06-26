@@ -14,7 +14,7 @@ This improved packer adds several features over the original:
 
 # Setup
 
-## Using [uv](https://docs.astral.sh/uv/)
+## Using [uv](https://docs.astral.sh/uv/) (recommended)
 
 If you don't have `uv` installed, follow [these](https://docs.astral.sh/uv/getting-started/installation/) instructions.
 
