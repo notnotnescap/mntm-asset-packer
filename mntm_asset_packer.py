@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-An improved asset packer for the Momentum firmware.
+This script is used to pack and recover asset packs for Momentum.
+I recommend installing the mntm-asset-packer package from PyPI instead of using this script directly.
+more info here: https://github.com/notnotnescap/mntm-asset-packer
 This is a modification of the original asset_packer script by @Willy-JL
 """
 
@@ -139,7 +141,7 @@ def recover_from_bm(bm: "bytes | pathlib.Path", width: int, height: int) -> Imag
             if len(pixels) < num_target_pixels:
                 pixels.append(1 - ((byte_val >> i) & 1))
             else:
-                break 
+                break
         if len(pixels) >= num_target_pixels:
             break
 
@@ -514,16 +516,7 @@ def recover_specific(asset_pack_path: "str | pathlib.Path", output_directory: "s
 
     # recovering fonts
     if (asset_pack_path / "Fonts").is_dir():
-        # for font in (asset_pack_path / "Fonts").iterdir():
-        #     if (
-        #         not font.is_file()
-        #         or font.name.startswith(".")
-        #         or font.suffix not in (".c", ".u8f")
-        #     ):
-        #         continue
-        #     logger(f"Compiling font for pack '{asset_pack_path.name}': {font.name}")
-        #     pack_font(font, recovered / "Fonts" / font.name)
-        logger("Fonts recovery not implemented yet") #TODO: implement
+        logger("Fonts recovery not implemented yet")
 
     logger(f"\033[32mFinished recovering '\033[3m{asset_pack_path.name}\033[23m'\033[0m")
     logger(f"Saved to: '\033[33m{recovered}\033[0m'")
@@ -626,8 +619,8 @@ def main():
 
             case "create":
                 if len(sys.argv) >= 3:
-                    NAME = " ".join(sys.argv[2:])
-                    create_asset_pack(NAME, pathlib.Path.cwd(), logger=print)
+                    asset_pack_name = " ".join(sys.argv[2:])
+                    create_asset_pack(asset_pack_name, pathlib.Path.cwd(), logger=print)
 
                 else:
                     print(HELP_MESSAGE)
