@@ -1,6 +1,6 @@
 # mtm-asset-packer
 
-An improved asset packer script to make the process of creating and packing asset packs for the Momentum firmware easier. This script is designed to be backwards compatible with the original packer while adding new features for a better user experience.
+An improved asset packer script to make the process of creating asset packs for the [Momentum firmware](https://momentum-fw.dev/) easier. This script is designed to be backwards compatible with the original packer while adding new features for a better user experience.
 
 # Features
 
@@ -18,14 +18,20 @@ This improved packer adds several features over the original:
 
 If you don't have `uv` installed, follow [these](https://docs.astral.sh/uv/getting-started/installation/) instructions.
 
-You can quickly run the script without needing to install with this command:
+You can quickly run the script with this command:
 ```sh
 uvx mtm-asset-packer help
 ```
 
-If you want to install it globally, use this command:
+To install, use this command:
 ```sh
 uv tool install mtm-asset-packer
+mtm-asset-packer help
+```
+
+or using pip:
+```sh
+pip install mtm-asset-packer
 mtm-asset-packer help
 ```
 
