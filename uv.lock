@@ -15,9 +15,9 @@ wheels = [
 ]
 
 [[package]]
-name = "improved-asset-packer-for-momentum"
-version = "0.1.0"
-source = { virtual = "." }
+name = "mtm-asset-packer"
+version = "0.1.7"
+source = { editable = "." }
 dependencies = [
     { name = "heatshrink2" },
     { name = "pillow" },

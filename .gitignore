@@ -11,4 +11,5 @@ recovered
 # Python
 __pycache__/
 *.pyc
-venv/
+venv
+.venv

@@ -20,30 +20,30 @@ HELP_MESSAGE = """The asset packer converts animations with a specific structure
 with the asset pack system used in Momentum. More info: https://github.com/Kuronons/FZ_graphics
 
 Usage :
-    \033[32mpython3 asset_packer.py \033[0;33;1mhelp\033[0m
+    \033[32mmtm-asset-packer \033[0;33;1mhelp\033[0m
         \033[3mDisplays this message
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mcreate <Asset Pack Name>\033[0m
+    \033[32mmtm-asset-packer \033[0;33;1mcreate <Asset Pack Name>\033[0m
         \033[3mCreates a directory with the correct file structure that can be used
         to prepare for the packing process.
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mpack <./path/to/AssetPack>\033[0m
+    \033[32mmtm-asset-packer \033[0;33;1mpack <./path/to/AssetPack>\033[0m
         \033[3mPacks the specified asset pack into './asset_packs/AssetPack'
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mpack all\033[0m
+    \033[32mmtm-asset-packer \033[0;33;1mpack all\033[0m
         \033[3mPacks all asset packs in the current directory into './asset_packs/'
         \033[0m
-    \033[32mpython3 asset_packer.py\033[0m
-        \033[3mSame as 'python3 asset_packer.py pack all'
+    \033[32mpython3 mtm-asset-packer.py\033[0m
+        \033[3mSame as 'mtm-asset-packer pack all'
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mrecover <./asset_packs/AssetPack>\033[0m
+    \033[32mmtm-asset-packer \033[0;33;1mrecover <./asset_packs/AssetPack>\033[0m
         \033[3mRecovers the png frame(s) from a compiled assets for the specified asset pack
         The recovered asset pack is saved in './recovered/AssetPack'
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mrecover all\033[0m
+    \033[32mmtm-asset-packer \033[0;33;1mrecover all\033[0m
         \033[3mRecovers all asset packs in './asset_packs/' into './recovered/'
         \033[0m
-    \033[32mpython3 asset_packer.py \033[0;33;1mconvert <./path/to/AssetPack>\033[0m
+    \033[32mmtm-asset-packer \033[0;33;1mconvert <./path/to/AssetPack>\033[0m
         \033[3mConverts all anim frames to .png files and renames them to the correct format.
         (requires numbers in filenames)
         \033[0m
@@ -617,7 +617,8 @@ def create_asset_pack(asset_pack_name: str, output_directory: "str | pathlib.Pat
     logger(f"Created asset pack '{asset_pack_name}' in '{output_directory}'")
 
 
-if __name__ == "__main__":
+def main():
+    """Main function"""
     if len(sys.argv) > 1:
         match sys.argv[1]:
             case "help" | "-h" | "--help":
@@ -674,3 +675,7 @@ if __name__ == "__main__":
         pack_all_asset_packs(here, here / "asset_packs", logger=print)
         end = time.perf_counter()
         print(f"\nFinished in {round(end - start, 2)}s\n")
+
+
+if __name__ == "__main__":
+    main()

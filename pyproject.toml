@@ -1,10 +1,23 @@
 [project]
-name = "improved-asset-packer-for-momentum"
-version = "0.1.0"
+name = "mtm-asset-packer"
+version = "1.0.0"
 description = "An improved asset packer script to make the process of creating and packing asset packs for the Momentum firmware easier."
 readme = "README.md"
+authors = [
+    { name = "notnotnescap", email = "97590612+nescapp@users.noreply.github.com" }
+]
 requires-python = ">=3.11"
 dependencies = [
     "heatshrink2>=0.13.0",
     "pillow>=11.2.1",
 ]
+
+[project.scripts]
+mtm-asset-packer = "mtm_asset_packer:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+force-include = { "mtm_asset_packer.py" = "mtm_asset_packer.py" }
