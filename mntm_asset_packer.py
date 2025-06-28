@@ -1,33 +1,36 @@
 #!/usr/bin/env python3
-"""
-This script is used to pack and recover asset packs for Momentum.
+"""Script to pack and recover asset packs for Momentum.
+
 I recommend installing the mntm-asset-packer package from PyPI instead of using this script directly.
 more info here: https://github.com/notnotnescap/mntm-asset-packer
 This is a modification of the original asset_packer script by @Willy-JL
 """
 
-import pathlib
-import shutil
-import struct
-import typing
-import time
-import re
+import importlib.metadata
 import io
 import os
+import pathlib
+import re
+import shutil
+import struct
 import sys
-from PIL import Image, ImageOps
-import heatshrink2
+import time
+import typing
+from pathlib import Path
 
-HELP_MESSAGE = """The asset packer converts animations with a specific structure to be efficient and compatible
-with the asset pack system used in Momentum. More info: https://github.com/Kuronons/FZ_graphics
+import heatshrink2
+from PIL import Image, ImageOps
+
+HELP_MESSAGE = """The asset packer converts animations with a specific structure to be \
+efficient and compatible with the asset pack system used in Momentum.
+More info: https://github.com/Kuronons/FZ_graphics
 
 Usage :
     \033[32mmntm-asset-packer \033[0;33;1mhelp\033[0m
         \033[3mDisplays this message
         \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mcreate <Asset Pack Name>\033[0m
-        \033[3mCreates a directory with the correct file structure that can be used
-        to prepare for the packing process.
+        \033[3mCreates a directory with the correct file structure that can be used to prepare for the packing process.
         \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mpack <./path/to/AssetPack>\033[0m
         \033[3mPacks the specified asset pack into './asset_packs/AssetPack'
@@ -39,15 +42,13 @@ Usage :
         \033[3mSame as 'mntm-asset-packer pack all'
         \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mrecover <./asset_packs/AssetPack>\033[0m
-        \033[3mRecovers the png frame(s) from a compiled assets for the specified asset pack
-        The recovered asset pack is saved in './recovered/AssetPack'
+        \033[3mRecovers the png frame(s) from a compiled assets for the specified asset pack. The recovered asset pack is saved in './recovered/AssetPack'
         \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mrecover all\033[0m
         \033[3mRecovers all asset packs in './asset_packs/' into './recovered/'
         \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mconvert <./path/to/AssetPack>\033[0m
-        \033[3mConverts all anim frames to .png files and renames them to the correct format.
-        (requires numbers in filenames)
+        \033[3mConverts all anim frames to .png files and renames them to the correct format. (requires numbers in filenames)
         \033[0m
 """
 
@@ -80,9 +81,11 @@ Active cooldown: 0
 Bubble slots: 0
 """
 
+VERSION = importlib.metadata.version("mntm-asset-packer")
+
 
 def convert_to_bm(img: "Image.Image | pathlib.Path") -> bytes:
-    """Converts an image to a bitmap"""
+    """Converts an image to a bitmap."""
     if not isinstance(img, Image.Image):
         img = Image.open(img)
 
@@ -109,7 +112,7 @@ def convert_to_bm(img: "Image.Image | pathlib.Path") -> bytes:
 
 
 def convert_to_bmx(img: "Image.Image | pathlib.Path") -> bytes:
-    """Converts an image to a bmx that contains image size info"""
+    """Converts an image to a bmx that contains image size info."""
     if not isinstance(img, Image.Image):
         img = Image.open(img)
 
@@ -119,15 +122,15 @@ def convert_to_bmx(img: "Image.Image | pathlib.Path") -> bytes:
 
 
 def recover_from_bm(bm: "bytes | pathlib.Path", width: int, height: int) -> Image.Image:
-    """Converts a bitmap back to a png (same as convert_to_bm but in reverse) The resulting png
-    will not always be the same as the original image as some information is lost during the
-    conversion"""
+    """Converts a bitmap back to a png (same as convert_to_bm but in reverse).
+
+    The resulting png will not always be the same as the original image as some
+    information is lost during the conversion.
+    """
     if not isinstance(bm, bytes):
         bm = bm.read_bytes()
 
-    # expected_length = (width * height + 7) // 8
-
-    if bm.startswith(b'\x01\x00'):
+    if bm.startswith(b"\x01\x00"):
         data_dec = heatshrink2.decompress(bm[4:], window_sz2=8, lookahead_sz2=4)
     else:
         data_dec = bm[1:]
@@ -151,7 +154,7 @@ def recover_from_bm(bm: "bytes | pathlib.Path", width: int, height: int) -> Imag
 
 
 def recover_from_bmx(bmx: "bytes | pathlib.Path") -> Image.Image:
-    """Converts a bmx back to a png (same as convert_to_bmx but in reverse)"""
+    """Converts a bmx back to a png (same as convert_to_bmx but in reverse)."""
     if not isinstance(bmx, bytes):
         bmx = bmx.read_bytes()
 
@@ -159,21 +162,23 @@ def recover_from_bmx(bmx: "bytes | pathlib.Path") -> Image.Image:
     return recover_from_bm(bmx[8:], width, height)
 
 
-def copy_file_as_lf(src: "pathlib.Path", dst: "pathlib.Path"):
-    """Copy file but replace Windows Line Endings with Unix Line Endings"""
+def copy_file_as_lf(src: "pathlib.Path", dst: "pathlib.Path") -> None:
+    """Copy file but replace Windows Line Endings with Unix Line Endings."""
     dst.write_bytes(src.read_bytes().replace(b"\r\n", b"\n"))
 
 
-def pack_anim(src: pathlib.Path, dst: pathlib.Path):
-    """Packs an anim"""
+def pack_anim(src: pathlib.Path, dst: pathlib.Path) -> None:
+    """Packs an anim."""
     if not (src / "meta.txt").is_file():
-        print(f"\033[31mNo meta.txt found in \"{src.name}\" anim.\033[0m")
+        print(f'\033[31mNo meta.txt found in "{src.name}" anim.\033[0m')
         return
     if not any(re.match(r"frame_\d+.(png|bm)", file.name) for file in src.iterdir()):
-        print(f"\033[31mNo frames with the required format found in \"{src.name}\" anim.\033[0m")
+        print(
+            f'\033[31mNo frames with the required format found in "{src.name}" anim.\033[0m',
+        )
         try:
             input(
-                "Press [Enter] to convert and rename the frames or [Ctrl+C] to cancel\033[0m"
+                "Press [Enter] to convert and rename the frames or [Ctrl+C] to cancel\033[0m",
             )
         except KeyboardInterrupt:
             sys.exit(0)
@@ -189,18 +194,19 @@ def pack_anim(src: pathlib.Path, dst: pathlib.Path):
         elif frame.name.startswith("frame_"):
             if frame.suffix == ".png":
                 (dst / frame.with_suffix(".bm").name).write_bytes(convert_to_bm(frame))
-            elif frame.suffix == ".bm":
-                if not (dst / frame.name).is_file():
-                    shutil.copyfile(frame, dst / frame.name)
+            elif frame.suffix == ".bm" and not (dst / frame.name).is_file():
+                shutil.copyfile(frame, dst / frame.name)
 
 
-def recover_anim(src: pathlib.Path, dst: pathlib.Path):
-    """Converts a bitmap to a png"""
-    if not os.path.exists(src):
-        print(f"\033[31mError: \"{src}\" not found\033[0m")
+def recover_anim(src: pathlib.Path, dst: pathlib.Path) -> None:
+    """Converts a bitmap to a png."""
+    if not Path.exists(src):
+        print(f'\033[31mError: "{src}" not found\033[0m')
         return
     if not any(re.match(r"frame_\d+.bm", file.name) for file in src.iterdir()):
-        print(f"\033[31mNo frames with the required format found in \"{src.name}\" anim.\033[0m")
+        print(
+            f'\033[31mNo frames with the required format found in "{src.name}" anim.\033[0m',
+        )
         return
 
     dst.mkdir(parents=True, exist_ok=True)
@@ -208,9 +214,9 @@ def recover_anim(src: pathlib.Path, dst: pathlib.Path):
     width = 128
     height = 64
     meta = src / "meta.txt"
-    if os.path.exists(meta):
+    if Path.exists(meta):
         shutil.copyfile(meta, dst / meta.name)
-        with open(meta, "r", encoding="utf-8") as f:
+        with Path.open(meta, encoding="utf-8") as f:
             for line in f:
                 if line.startswith("Width:"):
                     width = int(line.split(":")[1].strip())
@@ -225,8 +231,8 @@ def recover_anim(src: pathlib.Path, dst: pathlib.Path):
             img.save(dst / file.with_suffix(".png").name)
 
 
-def pack_animated_icon(src: pathlib.Path, dst: pathlib.Path):
-    """Packs an animated icon"""
+def pack_animated_icon(src: pathlib.Path, dst: pathlib.Path) -> None:
+    """Packs an animated ico."""
     if not (src / "frame_rate").is_file() and not (src / "meta").is_file():
         return
     dst.mkdir(parents=True, exist_ok=True)
@@ -256,8 +262,8 @@ def pack_animated_icon(src: pathlib.Path, dst: pathlib.Path):
         (dst / "meta").write_bytes(struct.pack("<IIII", *size, frame_rate, frame_count))
 
 
-def recover_animated_icon(src: pathlib.Path, dst: pathlib.Path):
-    """Recovers an animated icon"""
+def recover_animated_icon(src: pathlib.Path, dst: pathlib.Path) -> None:
+    """Recovers an animated icon."""
     meta_file_path = src / "meta"
 
     if not meta_file_path.is_file():
@@ -265,7 +271,7 @@ def recover_animated_icon(src: pathlib.Path, dst: pathlib.Path):
 
     unpacked_meta_data = None
     try:
-        with open(meta_file_path, "rb") as f:
+        with Path.open(meta_file_path, "rb") as f:
             expected_bytes_count = struct.calcsize("<IIII")
             data_bytes = f.read(expected_bytes_count)
             if len(data_bytes) < expected_bytes_count:
@@ -273,9 +279,11 @@ def recover_animated_icon(src: pathlib.Path, dst: pathlib.Path):
                 return
             unpacked_meta_data = struct.unpack("<IIII", data_bytes)
     except struct.error:
-        print(f"Error: Failed to unpack meta file '{meta_file_path}'. It might be corrupted.")
+        print(
+            f"Error: Failed to unpack meta file '{meta_file_path}'. It might be corrupted.",
+        )
         return
-    except Exception as e: # Catch other potential IO errors
+    except OSError as e:  # Catch file-related IO errors
         print(f"Error reading meta file '{meta_file_path}': {e}")
         return
 
@@ -295,45 +303,38 @@ def recover_animated_icon(src: pathlib.Path, dst: pathlib.Path):
         try:
             frame = recover_from_bm(frame_bm_file_path, image_width, image_height)
             frame.save(dst / f"frame_{i:02}.png")
-        except Exception as e:
+        except (OSError, ValueError) as e:
             print(f"Error recovering or saving frame '{frame_bm_file_path}': {e}")
-            continue # skip to the next frame if an error occurs
+            continue  # skip to the next frame if an error occurs
 
     (dst / "frame_rate").write_text(str(frame_rate_value))
 
 
-def pack_static_icon(src: pathlib.Path, dst: pathlib.Path):
-    """Packs a static icon"""
+def pack_static_icon(src: pathlib.Path, dst: pathlib.Path) -> None:
+    """Packs a static icon."""
     dst.parent.mkdir(parents=True, exist_ok=True)
     if src.suffix == ".png":
         dst.with_suffix(".bmx").write_bytes(convert_to_bmx(src))
-    elif src.suffix == ".bmx":
-        if not dst.is_file():
-            shutil.copyfile(src, dst)
+    elif src.suffix == ".bmx" and not dst.is_file():
+        shutil.copyfile(src, dst)
 
 
-def recover_static_icon(src: pathlib.Path, dst: pathlib.Path):
-    """Recovers a static icon"""
+def recover_static_icon(src: pathlib.Path, dst: pathlib.Path) -> None:
+    """Recovers a static icon."""
     dst.parent.mkdir(parents=True, exist_ok=True)
     if src.suffix == ".bmx":
         recover_from_bmx(src).save(dst.with_suffix(".png"))
 
 
-def pack_font(src: pathlib.Path, dst: pathlib.Path):
-    """Packs a font"""
+def pack_font(src: pathlib.Path, dst: pathlib.Path) -> None:
+    """Packs a font."""
     dst.parent.mkdir(parents=True, exist_ok=True)
     if src.suffix == ".c":
-        code = (
-            src.read_bytes().split(b' U8G2_FONT_SECTION("')[1].split(b'") =')[1].strip()
-        )
+        code = src.read_bytes().split(b' U8G2_FONT_SECTION("')[1].split(b'") =')[1].strip()
         font = b""
         for line in code.splitlines():
             if line.count(b'"') == 2:
-                font += (
-                    line[line.find(b'"') + 1 : line.rfind(b'"')]
-                    .decode("unicode_escape")
-                    .encode("latin_1")
-                )
+                font += line[line.find(b'"') + 1 : line.rfind(b'"')].decode("unicode_escape").encode("latin_1")
         font += b"\0"
         dst.with_suffix(".u8f").write_bytes(font)
     elif src.suffix == ".u8f":
@@ -344,27 +345,25 @@ def pack_font(src: pathlib.Path, dst: pathlib.Path):
 # recover font is not implemented
 
 
-def convert_and_rename_frames(directory: "str | pathlib.Path", logger: typing.Callable):
-    """Converts all frames to png and renames them "frame_N.png"
-    (requires the image name to contain the frame number)"""
+def convert_and_rename_frames(directory: "str | pathlib.Path", logger: typing.Callable) -> None:
+    """Converts all frames to png and renames them "frame_N.png".
+
+    (requires the image name to contain the frame number)
+    """
     already_formatted = True
     for file in directory.iterdir():
-        if file.is_file() and file.suffix in (".jpg", ".jpeg", ".png"):
-            if not re.match(r"frame_\d+.png", file.name):
-                already_formatted = False
-                break
+        if file.is_file() and file.suffix in (".jpg", ".jpeg", ".png") and not re.match(r"frame_\d+.png", file.name):
+            already_formatted = False
+            break
     if already_formatted:
-        logger(f"\"{directory.name}\" anim is formatted")
+        logger(f'"{directory.name}" anim is formatted')
         return
 
     try:
         print(
-            f"\033[31mThis will convert all frames for the \"{directory.name}\" anim to png and rename them.\n"
-            "This action is irreversible, make sure to back up your files if needed.\n\033[0m"
+            f'\033[31mThis will convert all frames for the "{directory.name}" anim to png and rename them.\nThis action is irreversible, make sure to back up your files if needed.\n\033[0m',
         )
-        input(
-            "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
-        )
+        input("Press [Enter] if you wish to continue or [Ctrl+C] to cancel")
     except KeyboardInterrupt:
         sys.exit(0)
     print()
@@ -384,16 +383,26 @@ def convert_and_rename_frames(directory: "str | pathlib.Path", logger: typing.Ca
             file.unlink()
 
 
-def convert_and_rename_frames_for_all_anims(directory_for_anims: "str | pathlib.Path", logger: typing.Callable):
-    """Converts all frames to png and renames them "frame_N.png for all anims in the given anim folder.
-    (requires the image name to contain the frame number)"""
+def convert_and_rename_frames_for_all_anims(
+    directory_for_anims: "str | pathlib.Path",
+    logger: typing.Callable,
+) -> None:
+    """Formats all anim frames correctly.
+
+    Converts all frames to png and renames them "frame_N.png for all anims in the given anim folder.
+    (requires the image name to contain the frame number)
+    """
     for anim in directory_for_anims.iterdir():
         if anim.is_dir():
             convert_and_rename_frames(anim, logger)
 
 
-def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
-    """Packs a specific asset pack"""
+def pack_specific(
+    asset_pack_path: "str | pathlib.Path",
+    output_directory: "str | pathlib.Path",
+    logger: typing.Callable,
+) -> None:
+    """Packs a specific asset pack."""
     asset_pack_path = pathlib.Path(asset_pack_path)
     output_directory = pathlib.Path(output_directory)
     logger(f"Packing '\033[3m{asset_pack_path.name}\033[0m'")
@@ -415,22 +424,23 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
 
     # packing anims
     if (asset_pack_path / "Anims/manifest.txt").exists():
-        (packed / "Anims").mkdir(parents=True, exist_ok=True) # ensure that the "Anims" directory exists
-        copy_file_as_lf(asset_pack_path / "Anims/manifest.txt", packed / "Anims/manifest.txt")
+        (packed / "Anims").mkdir(
+            parents=True,
+            exist_ok=True,
+        )  # ensure that the "Anims" directory exists
+        copy_file_as_lf(
+            asset_pack_path / "Anims/manifest.txt",
+            packed / "Anims/manifest.txt",
+        )
         manifest = (asset_pack_path / "Anims/manifest.txt").read_bytes()
 
         # Find all the anims in the manifest
         for anim in re.finditer(rb"Name: (.*)", manifest):
-            anim = (
-                anim.group(1)
-                .decode()
-                .replace("\\", "/")
-                .replace("/", os.sep)
-                .replace("\r", "\n")
-                .strip()
+            anim_name = anim.group(1).decode().replace("\\", "/").replace("/", os.sep).replace("\r", "\n").strip()
+            logger(
+                f"Compiling anim '\033[3m{anim_name}\033[0m' for '\033[3m{asset_pack_path.name}\033[0m'",
             )
-            logger(f"Compiling anim '\033[3m{anim}\033[0m' for '\033[3m{asset_pack_path.name}\033[0m'")
-            pack_anim(asset_pack_path / "Anims" / anim, packed / "Anims" / anim)
+            pack_anim(asset_pack_path / "Anims" / anim_name, packed / "Anims" / anim_name)
 
     # packing icons
     if (asset_pack_path / "Icons").is_dir():
@@ -441,20 +451,20 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
                 if icon.name.startswith("."):
                     continue
                 if icon.is_dir():
-                    logger(f"Compiling icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}")
+                    logger(
+                        f"Compiling icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}",
+                    )
                     pack_animated_icon(icon, packed / "Icons" / icons.name / icon.name)
                 elif icon.is_file() and icon.suffix in (".png", ".bmx"):
-                    logger(f"Compiling icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}")
+                    logger(
+                        f"Compiling icon for pack '{asset_pack_path.name}': {icons.name}/{icon.name}",
+                    )
                     pack_static_icon(icon, packed / "Icons" / icons.name / icon.name)
 
     # packing fonts
     if (asset_pack_path / "Fonts").is_dir():
         for font in (asset_pack_path / "Fonts").iterdir():
-            if (
-                not font.is_file()
-                or font.name.startswith(".")
-                or font.suffix not in (".c", ".u8f")
-            ):
+            if not font.is_file() or font.name.startswith(".") or font.suffix not in (".c", ".u8f"):
                 continue
             logger(f"Compiling font for pack '{asset_pack_path.name}': {font.name}")
             pack_font(font, packed / "Fonts" / font.name)
@@ -463,8 +473,12 @@ def pack_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str 
     logger(f"Saved to: '\033[33m{packed}\033[0m'")
 
 
-def recover_specific(asset_pack_path: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
-    """Recovers a specific asset pack"""
+def recover_specific(
+    asset_pack_path: "str | pathlib.Path",
+    output_directory: "str | pathlib.Path",
+    logger: typing.Callable,
+) -> None:
+    """Recovers a specific asset pack."""
     asset_pack_path = pathlib.Path(asset_pack_path)
     output_directory = pathlib.Path(output_directory)
     logger(f"Recovering '\033[3m{asset_pack_path.name}\033[0m'")
@@ -486,11 +500,17 @@ def recover_specific(asset_pack_path: "str | pathlib.Path", output_directory: "s
 
     # recovering anims
     if (asset_pack_path / "Anims").is_dir():
-        (recovered / "Anims").mkdir(parents=True, exist_ok=True) # ensure that the "Anims" directory exists
+        (recovered / "Anims").mkdir(
+            parents=True,
+            exist_ok=True,
+        )  # ensure that the "Anims" directory exists
 
         # copy the manifest if it exists
         if (asset_pack_path / "Anims/manifest.txt").exists():
-            shutil.copyfile(asset_pack_path / "Anims/manifest.txt", recovered / "Anims/manifest.txt")
+            shutil.copyfile(
+                asset_pack_path / "Anims/manifest.txt",
+                recovered / "Anims/manifest.txt",
+            )
 
         # recover all the anims in the Anims directory
         for anim in (asset_pack_path / "Anims").iterdir():
@@ -522,16 +542,18 @@ def recover_specific(asset_pack_path: "str | pathlib.Path", output_directory: "s
     logger(f"Saved to: '\033[33m{recovered}\033[0m'")
 
 
-def pack_all_asset_packs(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
-    """Packs all asset packs in the source directory"""
+def pack_all_asset_packs(
+    source_directory: "str | pathlib.Path",
+    output_directory: "str | pathlib.Path",
+    logger: typing.Callable,
+) -> None:
+    """Packs all asset packs in the source directory."""
     try:
         print(
-            "This will pack all asset packs in the current directory.\n"
-            "The resulting asset packs will be saved to './asset_packs'\n"
+            "This will pack all asset packs in the current directory."
+            "The resulting asset packs will be saved to './asset_packs'\n",
         )
-        input(
-            "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
-        )
+        input("Press [Enter] if you wish to continue or [Ctrl+C] to cancel")
     except KeyboardInterrupt:
         sys.exit(0)
     print()
@@ -543,22 +565,24 @@ def pack_all_asset_packs(source_directory: "str | pathlib.Path", output_director
         # Skip folders that are definitely not meant to be packed
         if source == output_directory:
             continue
-        if not source.is_dir() or source.name.startswith(".") or source.name in ("venv", "recovered") :
+        if not source.is_dir() or source.name.startswith(".") or source.name in ("venv", "recovered"):
             continue
 
         pack_specific(source, output_directory, logger)
 
 
-def recover_all_asset_packs(source_directory: "str | pathlib.Path", output_directory: "str | pathlib.Path", logger: typing.Callable):
-    """Recovers all asset packs in the source directory"""
+def recover_all_asset_packs(
+    source_directory: "str | pathlib.Path",
+    output_directory: "str | pathlib.Path",
+    logger: typing.Callable,
+) -> None:
+    """Recovers all asset packs in the source directory."""
     try:
         print(
-            "This will recover all asset packs in the current directory.\n"
-            "The resulting asset packs will be saved to './recovered'\n"
+            "This will recover all asset packs in the current directory."
+            "The resulting asset packs will be saved to './recovered'\n",
         )
-        input(
-            "Press [Enter] if you wish to continue or [Ctrl+C] to cancel"
-        )
+        input("Press [Enter] if you wish to continue or [Ctrl+C] to cancel")
     except KeyboardInterrupt:
         sys.exit(0)
     print()
@@ -570,15 +594,18 @@ def recover_all_asset_packs(source_directory: "str | pathlib.Path", output_direc
         # Skip folders that are definitely not meant to be recovered
         if source == output_directory:
             continue
-        if not source.is_dir() or source.name.startswith(".") or source.name in ("venv", "recovered") :
+        if not source.is_dir() or source.name.startswith(".") or source.name in ("venv", "recovered"):
             continue
 
         recover_specific(source, output_directory, logger)
 
 
-def create_asset_pack(asset_pack_name: str, output_directory: "str | pathlib.Path", logger: typing.Callable):
-    """Creates the file structure for an asset pack"""
-
+def create_asset_pack(
+    asset_pack_name: str,
+    output_directory: "str | pathlib.Path",
+    logger: typing.Callable,
+) -> None:
+    """Creates the file structure for an asset pack."""
     if not isinstance(output_directory, pathlib.Path):
         output_directory = pathlib.Path(output_directory)
 
@@ -600,74 +627,106 @@ def create_asset_pack(asset_pack_name: str, output_directory: "str | pathlib.Pat
     # creating "manifest.txt" file
     if generate_example_files:
         (output_directory / asset_pack_name / "Anims" / "manifest.txt").touch()
-        with open(output_directory / asset_pack_name / "Anims" / "manifest.txt", "w", encoding="utf-8") as f:
+        with Path.open(
+            output_directory / asset_pack_name / "Anims" / "manifest.txt",
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write(EXAMPLE_MANIFEST)
-        (output_directory / asset_pack_name / "Anims" / "example_anim").mkdir(parents=True)
+        (output_directory / asset_pack_name / "Anims" / "example_anim").mkdir(
+            parents=True,
+        )
         (output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt").touch()
-        with open(output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt", "w", encoding="utf-8") as f:
+        with Path.open(
+            output_directory / asset_pack_name / "Anims" / "example_anim" / "meta.txt",
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write(EXAMPLE_META)
 
     logger(f"Created asset pack '{asset_pack_name}' in '{output_directory}'")
 
 
-def main():
-    """Main function"""
-    if len(sys.argv) > 1:
-        match sys.argv[1]:
-            case "help" | "-h" | "--help":
-                print(HELP_MESSAGE)
-
-            case "create":
-                if len(sys.argv) >= 3:
-                    asset_pack_name = " ".join(sys.argv[2:])
-                    create_asset_pack(asset_pack_name, pathlib.Path.cwd(), logger=print)
-
-                else:
-                    print(HELP_MESSAGE)
-
-            case "pack":
-                if len(sys.argv) == 3:
-                    here = pathlib.Path(__file__).absolute().parent
-                    start = time.perf_counter()
-
-                    if sys.argv[2] == "all":
-                        pack_all_asset_packs(here, here / "asset_packs", logger=print)
-                    else:
-                        pack_specific(sys.argv[2], pathlib.Path.cwd() / "asset_packs", logger=print)
-
-                    end = time.perf_counter()
-                    print(f"\nFinished in {round(end - start, 2)}s\n")
-                else:
-                    print(HELP_MESSAGE)
-
-            case "recover":
-                if len(sys.argv) == 3:
-                    here = pathlib.Path(__file__).absolute().parent
-                    start = time.perf_counter()
-
-                    if sys.argv[2] == "all":
-                        recover_all_asset_packs(here / "asset_packs", here / "recovered", logger=print)
-                    else:
-                        recover_specific(sys.argv[2], pathlib.Path.cwd() / "recovered", logger=print)
-
-                    # recover_anim(pathlib.Path(sys.argv[2]), pathlib.Path.cwd() / "recovered")
-                    end = time.perf_counter()
-                    print(f"Finished in {round(end - start, 2)}s")
-
-            case "convert":
-                if len(sys.argv) == 3:
-                    convert_and_rename_frames_for_all_anims(pathlib.Path(sys.argv[2]) / "Anims", logger=print)
-                else:
-                    print(HELP_MESSAGE)
-
-            case _:
-                print(HELP_MESSAGE)
-    else:
+def main() -> None:
+    """Main function."""
+    if len(sys.argv) <= 1:
+        # If no arguments are provided, pack all
         here = pathlib.Path(__file__).absolute().parent
         start = time.perf_counter()
         pack_all_asset_packs(here, here / "asset_packs", logger=print)
         end = time.perf_counter()
         print(f"\nFinished in {round(end - start, 2)}s\n")
+        return
+
+    match sys.argv[1]:
+        case "--version" | "-v":
+            print(f"mntm-asset-packer {VERSION}")
+
+        case "help" | "-h" | "--help":
+            print(HELP_MESSAGE)
+            return
+
+        case "create":
+            if len(sys.argv) >= 3:
+                asset_pack_name = " ".join(sys.argv[2:])
+                create_asset_pack(asset_pack_name, pathlib.Path.cwd(), logger=print)
+                return
+            print(HELP_MESSAGE)
+
+        case "pack":
+            if len(sys.argv) == 3:
+                here = pathlib.Path(__file__).absolute().parent
+                start = time.perf_counter()
+
+                if sys.argv[2] == "all":
+                    pack_all_asset_packs(
+                        here,
+                        here / "asset_packs",
+                        logger=print,
+                    )
+                else:
+                    pack_specific(
+                        sys.argv[2],
+                        pathlib.Path.cwd() / "asset_packs",
+                        logger=print,
+                    )
+
+                end = time.perf_counter()
+                print(f"\nFinished in {round(end - start, 2)}s\n")
+                return
+            print(HELP_MESSAGE)
+
+        case "recover":
+            if len(sys.argv) == 3:
+                here = pathlib.Path(__file__).absolute().parent
+                start = time.perf_counter()
+
+                if sys.argv[2] == "all":
+                    recover_all_asset_packs(
+                        here / "asset_packs",
+                        here / "recovered",
+                        logger=print,
+                    )
+                else:
+                    recover_specific(
+                        sys.argv[2],
+                        pathlib.Path.cwd() / "recovered",
+                        logger=print,
+                    )
+
+                end = time.perf_counter()
+                print(f"Finished in {round(end - start, 2)}s")
+                return
+            print(HELP_MESSAGE)
+
+        case "convert":
+            if len(sys.argv) == 3:
+                convert_and_rename_frames_for_all_anims(pathlib.Path(sys.argv[2]) / "Anims", logger=print)
+                return
+            print(HELP_MESSAGE)
+
+        case _:
+            print(HELP_MESSAGE)
 
 
 if __name__ == "__main__":

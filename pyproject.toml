@@ -1,10 +1,10 @@
 [project]
 name = "mntm-asset-packer"
-version = "1.1.1"
+version = "1.1.2"
 description = "An improved asset packer script to make the process of creating and packing asset packs for the Momentum firmware easier."
 readme = "README.md"
 authors = [
-    { name = "notnotnescap", email = "97590612+nescapp@users.noreply.github.com" }
+    { name = "notnotnescap", email = "nescap@tuta.io" }
 ]
 requires-python = ">=3.11"
 dependencies = [
@@ -21,3 +21,19 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 force-include = { "mntm_asset_packer.py" = "mntm_asset_packer.py" }
+
+[tool.ruff]
+lint.extend-select = [
+    "PTH", # Flake8-use-pathlib – encourages pathlib over os.path
+    "ALL"
+]
+lint.extend-ignore = [
+    "T20", # Flake8-print – disallows print statements
+    "D401", # Pydocstyle - Checks for docstring first lines that are not in an imperative mood.
+    "E501", # Pycodestyle - line too long
+    "SIM108", # Flake8-simplify - Check for if-else-blocks that can be replaced with a ternary or binary operator.
+    "PLR2004", # Pylint - Checks for the use of unnamed numerical constants ("magic") values in comparisons.
+    "PLR0912", # Pylint - Checks for functions or methods with too many branches
+    "C901", # mccabe - Checks for functions with a high McCabe complexity.
+]
+line-length = 120
