@@ -88,7 +88,7 @@ Bubble slots: 0
 try:
     VERSION = importlib.metadata.version("mntm-asset-packer")
 except importlib.metadata.PackageNotFoundError:
-    VERSION = "1.1.5 (standalone mode)"
+    VERSION = "1.1.6 (standalone mode)"
     # this means the script is being used directly with python
     # instead of using the python package
 
@@ -418,11 +418,16 @@ def pack_specific(
     """Packs a specific asset pack."""
     asset_pack_path = pathlib.Path(asset_pack_path)
     output_directory = pathlib.Path(output_directory)
-    logger(f"Packing '\033[3m{asset_pack_path.name}\033[0m'")
 
     if not asset_pack_path.is_dir():
         logger(f"\033[31mError: '{asset_pack_path}' is not a directory\033[0m")
         return
+
+    if not (asset_pack_path / "Anims").is_dir() and not (asset_pack_path / "Icons").is_dir() and not (asset_pack_path / "Fonts").is_dir() and not (asset_pack_path / "Passport").is_dir():
+        logger(f"\033[37mInfo: '{asset_pack_path}' is not an asset pack, skipping.\033[0m")
+        return
+
+    logger(f"Packing '\033[3m{asset_pack_path.name}\033[0m'")
 
     packed = output_directory / asset_pack_path.name
 
@@ -434,6 +439,7 @@ def pack_specific(
                 packed.unlink()
         except (OSError, shutil.Error):
             logger(f"\033[31mError: Failed to remove existing pack: '{packed}'\033[0m")
+            return
 
     # packing anims
     if (asset_pack_path / "Anims/manifest.txt").exists():
@@ -494,12 +500,16 @@ def recover_specific(
     """Recovers a specific asset pack."""
     asset_pack_path = pathlib.Path(asset_pack_path)
     output_directory = pathlib.Path(output_directory)
-    logger(f"Recovering '\033[3m{asset_pack_path.name}\033[0m'")
 
     if not asset_pack_path.is_dir():
         logger(f"\033[31mError: '{asset_pack_path}' is not a directory\033[0m")
         return
 
+    if not (asset_pack_path / "Anims").is_dir() and not (asset_pack_path / "Icons").is_dir() and not (asset_pack_path / "Fonts").is_dir() and not (asset_pack_path / "Passport").is_dir():
+        logger(f"\033[37mInfo: '{asset_pack_path}' is not an asset pack, skipping.\033[0m")
+        return
+
+    logger(f"Recovering '\033[3m{asset_pack_path.name}\033[0m'")
     recovered = output_directory / asset_pack_path.name
 
     if recovered.exists():
