@@ -84,7 +84,13 @@ Active cooldown: 0
 Bubble slots: 0
 """
 
-VERSION = importlib.metadata.version("mntm-asset-packer")
+
+try:
+    VERSION = importlib.metadata.version("mntm-asset-packer")
+except importlib.metadata.PackageNotFoundError:
+    VERSION = "1.1.5 (standalone mode)"
+    # this means the script is being used directly with python
+    # instead of using the python package
 
 
 def convert_to_bm(img: "Image.Image | pathlib.Path") -> bytes:
