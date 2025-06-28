@@ -56,6 +56,9 @@ If you run the script directly, replace `mntm-asset-packer` with `python3 mntm_a
 `mntm-asset-packer help`
 : Displays a detailed help message with all available commands.
 
+`mntm-asset-packer --version`
+: Displays the version of the asset packer.
+
 `mntm-asset-packer create <Asset Pack Name>`
 : Creates a directory with the correct file structure to start a new asset pack.
 

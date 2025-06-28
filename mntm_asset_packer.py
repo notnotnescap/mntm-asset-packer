@@ -29,6 +29,9 @@ Usage :
     \033[32mmntm-asset-packer \033[0;33;1mhelp\033[0m
         \033[3mDisplays this message
         \033[0m
+    \033[32mmntm-asset-packer \033[0;33;1m--version\033[0m
+        \033[3mDisplays the version of the asset packer
+        \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mcreate <Asset Pack Name>\033[0m
         \033[3mCreates a directory with the correct file structure that can be used to prepare for the packing process.
         \033[0m
@@ -655,7 +658,7 @@ def main() -> None:
     """Main function."""
     if len(sys.argv) <= 1:
         # If no arguments are provided, pack all
-        here = pathlib.Path(__file__).absolute().parent
+        here = pathlib.Path.cwd()
         start = time.perf_counter()
         pack_all_asset_packs(here, here / "asset_packs", logger=print)
         end = time.perf_counter()
@@ -679,7 +682,7 @@ def main() -> None:
 
         case "pack":
             if len(sys.argv) == 3:
-                here = pathlib.Path(__file__).absolute().parent
+                here = pathlib.Path.cwd()
                 start = time.perf_counter()
 
                 if sys.argv[2] == "all":
@@ -702,7 +705,7 @@ def main() -> None:
 
         case "recover":
             if len(sys.argv) == 3:
-                here = pathlib.Path(__file__).absolute().parent
+                here = pathlib.Path.cwd()
                 start = time.perf_counter()
 
                 if sys.argv[2] == "all":
