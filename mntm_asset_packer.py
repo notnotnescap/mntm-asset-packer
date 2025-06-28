@@ -172,7 +172,7 @@ def pack_anim(src: pathlib.Path, dst: pathlib.Path) -> None:
     if not (src / "meta.txt").is_file():
         print(f'\033[31mNo meta.txt found in "{src.name}" anim.\033[0m')
         return
-    if not any(re.match(r"frame_\d+.(png|bm)", file.name) for file in src.iterdir()):
+    if not any(re.match(r"frame_\d+\.(png|bm)", file.name) for file in src.iterdir()):
         print(
             f'\033[31mNo frames with the required format found in "{src.name}" anim.\033[0m',
         )
@@ -330,7 +330,11 @@ def pack_font(src: pathlib.Path, dst: pathlib.Path) -> None:
     """Packs a font."""
     dst.parent.mkdir(parents=True, exist_ok=True)
     if src.suffix == ".c":
-        code = src.read_bytes().split(b' U8G2_FONT_SECTION("')[1].split(b'") =')[1].strip()
+        try:
+            code = src.read_bytes().split(b' U8G2_FONT_SECTION("')[1].split(b'") =')[1].strip()
+        except IndexError:
+            print(f'\033[31mError: "{src.name}" is not a valid font file.\033[0m')
+            return
         font = b""
         for line in code.splitlines():
             if line.count(b'"') == 2:
@@ -415,7 +419,7 @@ def pack_specific(
 
     if packed.exists():
         try:
-            if packed.is_dir():
+            if packed.is_dir() and not packed.is_symlink():
                 shutil.rmtree(packed, ignore_errors=True)
             else:
                 packed.unlink()
