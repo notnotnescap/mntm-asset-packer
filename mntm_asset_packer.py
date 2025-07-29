@@ -91,7 +91,7 @@ Bubble slots: 0
 try:
     VERSION = importlib.metadata.version("mntm-asset-packer")
 except importlib.metadata.PackageNotFoundError:
-    VERSION = "1.2.0 (standalone mode)"
+    VERSION = "1.2.1 (standalone mode)"
     # this means the script is being used directly with python
     # instead of using the python package
 
