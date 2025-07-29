@@ -423,8 +423,8 @@ def pack_specific(
         logger(f"\033[31mError: '{asset_pack_path}' is not a directory\033[0m")
         return
 
-    if not (asset_pack_path / "Anims").is_dir() and not (asset_pack_path / "Icons").is_dir() and not (asset_pack_path / "Fonts").is_dir() and not (asset_pack_path / "Passport").is_dir():
-        logger(f"\033[37mInfo: '{asset_pack_path}' is not an asset pack, skipping.\033[0m")
+    if not any((asset_pack_path / d).is_dir() for d in ["Anims", "Icons", "Fonts", "Passport"]):
+        logger(f"\033[37mInfo: '{asset_pack_path}' is not a valid asset pack (Make sure it contains an 'Anims', 'Icons', 'Fonts' or 'Passport' directory), skipping.\033[0m")
         return
 
     logger(f"Packing '\033[3m{asset_pack_path.name}\033[0m'")
@@ -505,8 +505,8 @@ def recover_specific(
         logger(f"\033[31mError: '{asset_pack_path}' is not a directory\033[0m")
         return
 
-    if not (asset_pack_path / "Anims").is_dir() and not (asset_pack_path / "Icons").is_dir() and not (asset_pack_path / "Fonts").is_dir() and not (asset_pack_path / "Passport").is_dir():
-        logger(f"\033[37mInfo: '{asset_pack_path}' is not an asset pack, skipping.\033[0m")
+    if not any((asset_pack_path / d).is_dir() for d in ["Anims", "Icons", "Fonts", "Passport"]):
+        logger(f"\033[37mInfo: '{asset_pack_path}' is not a valid asset pack (Make sure it contains an 'Anims', 'Icons', 'Fonts' or 'Passport' directory), skipping.\033[0m")
         return
 
     logger(f"Recovering '\033[3m{asset_pack_path.name}\033[0m'")
@@ -681,6 +681,11 @@ def main() -> None:
         print(f"\nFinished in {round(end - start, 2)}s\n")
         return
 
+    # if the first argument is a directory, pack that directory
+    if len(sys.argv) == 2 and pathlib.Path(sys.argv[1]).is_dir():
+        pack_specific(sys.argv[1], pathlib.Path.cwd() / "asset_packs", logger=print)
+        return
+
     match sys.argv[1]:
         case "--version" | "-v":
             print(f"mntm-asset-packer {VERSION}")
@@ -696,7 +701,7 @@ def main() -> None:
                 return
             print(HELP_MESSAGE)
 
-        case "pack":
+        case "pack" | "compile":
             if len(sys.argv) == 3:
                 here = pathlib.Path.cwd()
                 start = time.perf_counter()

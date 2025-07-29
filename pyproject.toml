@@ -1,6 +1,6 @@
 [project]
 name = "mntm-asset-packer"
-version = "1.1.6"
+version = "1.1.7"
 description = "An improved asset packer script to make the process of creating and packing asset packs for the Momentum firmware easier."
 readme = "README.md"
 authors = [
