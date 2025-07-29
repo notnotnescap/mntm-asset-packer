@@ -44,7 +44,7 @@ Usage :
     \033[32mmntm-asset-packer \033[0;33;1mpack all\033[0m
         \033[3mPacks all asset packs in the current directory into './asset_packs/'
         \033[0m
-    \033[32mmntm-asset-packer.py\033[0m
+    \033[32mmntm-asset-packer\033[0m
         \033[3mSame as 'mntm-asset-packer pack all'
         \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mrecover <./asset_packs/AssetPack>\033[0m
