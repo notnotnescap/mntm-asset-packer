@@ -12,13 +12,13 @@ This improved packer adds several features over the original:
 -   **Asset pack recovery**: Recover PNGs and metadata from compiled asset packs. (Note: Font recovery is not yet implemented).
 -   **Backwards compatibility**: Works the same way as the original packer by default, so you can use it without changing your workflow.
 
-# Setup
+# Installation
 
-## Using [uv](https://docs.astral.sh/uv/) (recommended)
+## With [uv](https://docs.astral.sh/uv/) (recommended)
 
 If you don't have `uv` installed, follow [these](https://docs.astral.sh/uv/getting-started/installation/) instructions.
 
-You can quickly run the script with this command:
+You can quickly run the script without installing, using this command:
 ```sh
 uvx mntm-asset-packer help
 ```
@@ -29,13 +29,21 @@ uv tool install mntm-asset-packer
 mntm-asset-packer help
 ```
 
-or using pip:
+## With pip
+
+To install with pip, you can use this command:
 ```sh
 pip install mntm-asset-packer
 mntm-asset-packer help
 ```
 
-## Using venv
+You may need to use `pip3` instead of `pip` depending on your Python installation.
+
+# Standalone Mode
+
+You can also copy the `mntm_asset_packer.py` file to your project directory and run it directly with Python. (Not recommended)
+
+## Setup venv
 
 1.  Clone this repository and navigate into its directory.
 2.  Create and activate a virtual environment:
@@ -56,7 +64,7 @@ If you run the script directly, replace `mntm-asset-packer` with `python3 mntm_a
 `mntm-asset-packer help`
 : Displays a detailed help message with all available commands.
 
-`mntm-asset-packer --version`
+`mntm-asset-packer version`
 : Displays the version of the asset packer.
 
 `mntm-asset-packer create <Asset Pack Name>`
@@ -65,8 +73,14 @@ If you run the script directly, replace `mntm-asset-packer` with `python3 mntm_a
 `mntm-asset-packer pack <./path/to/AssetPack>`
 : Packs a single, specified asset pack into the `./asset_packs/` directory.
 
+`mntm-asset-packer <./path/to/AssetPack>`
+: Packs a single, specified asset pack into the `./asset_packs/` directory.
+
 `mntm-asset-packer pack all`
-: Packs all valid asset pack folders found in the current directory into `./asset_packs/`. This is the default action if no command is provided.
+: Packs all valid asset pack folders found in the current directory into `./asset_packs/`.
+
+`mntm-asset-packer`
+: Same as `mntm-asset-packer pack all`, 
 
 `mntm-asset-packer recover <./asset_packs/AssetPack>`
 : Recovers a compiled asset pack back to its source form (e.g., `.bmx` to `.png`). The recovered pack is saved in `./recovered/<AssetPackName>`.

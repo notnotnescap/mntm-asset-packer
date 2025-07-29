@@ -29,7 +29,7 @@ Usage :
     \033[32mmntm-asset-packer \033[0;33;1mhelp\033[0m
         \033[3mDisplays this message
         \033[0m
-    \033[32mmntm-asset-packer \033[0;33;1m--version\033[0m
+    \033[32mmntm-asset-packer \033[0;33;1mversion\033[0m
         \033[3mDisplays the version of the asset packer
         \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mcreate <Asset Pack Name>\033[0m
@@ -38,10 +38,13 @@ Usage :
     \033[32mmntm-asset-packer \033[0;33;1mpack <./path/to/AssetPack>\033[0m
         \033[3mPacks the specified asset pack into './asset_packs/AssetPack'
         \033[0m
+    \033[32mmntm-asset-packer \033[0;33;1m<./path/to/AssetPack>\033[0m
+        \033[3mSame as 'mntm-asset-packer pack <./path/to/AssetPack>'
+        \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mpack all\033[0m
         \033[3mPacks all asset packs in the current directory into './asset_packs/'
         \033[0m
-    \033[32mpython3 mntm-asset-packer.py\033[0m
+    \033[32mmntm-asset-packer.py\033[0m
         \033[3mSame as 'mntm-asset-packer pack all'
         \033[0m
     \033[32mmntm-asset-packer \033[0;33;1mrecover <./asset_packs/AssetPack>\033[0m
@@ -424,7 +427,9 @@ def pack_specific(
         return
 
     if not any((asset_pack_path / d).is_dir() for d in ["Anims", "Icons", "Fonts", "Passport"]):
-        logger(f"\033[37mInfo: '{asset_pack_path}' is not a valid asset pack (Make sure it contains an 'Anims', 'Icons', 'Fonts' or 'Passport' directory), skipping.\033[0m")
+        logger(
+            f"\033[37mInfo: '{asset_pack_path}' is not a valid asset pack (Make sure it contains an 'Anims', 'Icons', 'Fonts' or 'Passport' directory), skipping.\033[0m"
+        )
         return
 
     logger(f"Packing '\033[3m{asset_pack_path.name}\033[0m'")
@@ -506,7 +511,9 @@ def recover_specific(
         return
 
     if not any((asset_pack_path / d).is_dir() for d in ["Anims", "Icons", "Fonts", "Passport"]):
-        logger(f"\033[37mInfo: '{asset_pack_path}' is not a valid asset pack (Make sure it contains an 'Anims', 'Icons', 'Fonts' or 'Passport' directory), skipping.\033[0m")
+        logger(
+            f"\033[37mInfo: '{asset_pack_path}' is not a valid asset pack (Make sure it contains an 'Anims', 'Icons', 'Fonts' or 'Passport' directory), skipping.\033[0m"
+        )
         return
 
     logger(f"Recovering '\033[3m{asset_pack_path.name}\033[0m'")
@@ -687,7 +694,7 @@ def main() -> None:
         return
 
     match sys.argv[1]:
-        case "--version" | "-v":
+        case "version" | "--version" | "-v":
             print(f"mntm-asset-packer {VERSION}")
 
         case "help" | "-h" | "--help":
